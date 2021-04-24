@@ -19,7 +19,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Merliv <code>V1</code></h1>
+<h1 class="title">Merlin <code>v1</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -44,7 +44,7 @@ cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5d
 default_app = initialize_app(cred)
 db = firestore.client()
 SCRAPPER = db.collection(&#39;Scrapped&#39;)
-REVIEW = db.collection(&#39;Posts&#39;)
+REVIEW_POST = db.collection(&#39;Posts&#39;)
 USERS = db.collection(&#39;Users&#39;)
 PRODUCT = db.collection(&#39;Product&#39;)
 COMPANY = db.collection(&#39;Companies&#39;)
@@ -122,7 +122,7 @@ def create_review_guru():
 @app.route(&#39;/review/create&#39;, methods=[&#39;POST&#39;])
 def create_post():
     &#34;&#34;&#34;
-        create_post() : a review guru can create a post that will be sent to the waitlist collection.
+        create_post() : a review guru can create a post that will be sent to the waitlist collection, review-guru/contributions, and the Posts collection.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -146,8 +146,9 @@ def create_post():
             id_token = request.headers[&#39;Authorization&#39;]
             claims = auth.verify_id_token(id_token)
             if claims[&#39;Review-guru&#39;] is True:
-                REVIEW_POSTS = REVIEW.document(post_id)
-                REVIEW_POSTS.set({
+                Review_contributions = REVIEW_GURU.document(created_by_id).collection(&#39;contributions&#39;).document(product_id)
+                Review_post = REVIEW_POST.document(product_id)
+                Review_post.set({
                     &#39;Created_by&#39;: created_by,
                     &#39;Created_by_id&#39;: created_by_id,
                     &#39;Date&#39; : date,
@@ -155,7 +156,15 @@ def create_post():
                     &#39;Product_name&#39;: product_name,
                     &#39;Summary&#39;: Summary,
                 })
-                review_guru_document = WAITLIST.document(post_id)
+                Review_contributions.set({
+                    &#39;Created_by&#39;: created_by,
+                    &#39;Created_by_id&#39;: created_by_id,
+                    &#39;Date&#39; : date,
+                    &#39;Product_id&#39;: product_id,
+                    &#39;Product_name&#39;: product_name,
+                    &#39;Summary&#39;: Summary,
+                })
+                review_guru_document = WAITLIST.document(company_id).collection(product_id).document(created_by_id)
                 review_guru_document.set({
                 &#39;Created_by&#39;: created_by,
                 &#39;Created_by_id&#39;: created_by_id,
@@ -182,10 +191,11 @@ def get_products_inbox():
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
-        if(REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;) and claims[&#39;Review-guru&#39;] == True):
-            return jsonify(REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;).get().to_dict()),200
+        if(claims[&#39;Review-guru&#39;] == True):
+            query_ref = REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;).get()
+            return jsonify(query_ref.to_dict()),200
         else:
-            return jsonify(null), 200
+            return jsonify({&#34;success&#34;: False}), 200
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -199,9 +209,8 @@ def get_contributions():
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         if(claims[&#39;Review-guru&#39;] == True):
-            query_ref = REVIEW.where(u&#39;Created_by_id&#39;, u&#39;==&#39;, uid)
-            documents = [doc.to_dict() for doc in query_ref.stream()]
-            return (jsonify({&#34;Contributions&#34;:documents}),200)
+            query_ref = REVIEW_GURU.document(uid).collection(&#39;contributions&#39;).get()
+            return (jsonify(query_ref.to_dict()),200)
         else:
             return(jsonify({&#34;response&#34;:&#34;You are not authorised to create a review&#34;}))
     except Exception as e:
@@ -433,11 +442,31 @@ def get_products_by_category(cat):
 @app.route(&#39;/user/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
 def get_user_by_id(id):
     &#34;&#34;&#34;
-        get_user_by_id(id) : get a certain user or review guru by their profile ID.
+        get_user_by_id(id) : get a certain review guru by their profile ID, since this information is public only non-sensitive information will be AVAILABLE.
     &#34;&#34;&#34;
     try:
-        if(REVIEW_GURU.document(id).get()):
-            return jsonify(REVIEW_GURU.document(id).get().to_dict()),200
+        profile = REVIEW_GURU.document(id).get().to_dict()
+        if(profile):
+            bio = profile[&#39;bio&#39;]
+            profilePicture = profile[&#39;profilePicture&#39;]
+            username = profile[&#39;username&#39;]
+            review_scale = profile[&#39;review_scale&#39;]
+            first_name = profile[&#39;First_name&#39;]
+            last_name = profile[&#39;Last_name&#39;]
+            userID = profile[&#39;userID&#39;]
+            categories = profile[&#39;Categories&#39;]
+            contributions = REVIEW_GURU.document(id).collection(&#39;contributions&#39;)
+            documents = [doc.to_dict() for doc in contributions.stream()]
+            return jsonify({
+                &#34;username&#34;: username,
+                &#34;review_scale&#34;: review_scale,
+                &#34;bio&#34;: bio,
+                &#34;first_name&#34;: first_name,
+                &#34;last_name&#34;: last_name,
+                &#34;userID&#34;: userID,
+                &#34;category&#34;: categories,
+                &#34;contributions&#34;: documents
+            }),200
         else:
             return jsonify(null), 200
     except Exception as e:
@@ -446,7 +475,7 @@ def get_user_by_id(id):
 @app.route(&#39;/review/scrape&#39;, methods=[&#39;POST&#39;])
 def post_scrapping_link():
     &#34;&#34;&#34;
-        post_scrapping_link(): Amazon scrapping link.
+        post_scrapping_link(): post amazon scrapping link, category, email.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -557,7 +586,7 @@ def create_company():
 <span>def <span class="ident">create_post</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>create_post() : a review guru can create a post that will be sent to the waitlist collection.</p></div>
+<div class="desc"><p>create_post() : a review guru can create a post that will be sent to the waitlist collection, review-guru/contributions, and the Posts collection.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -565,7 +594,7 @@ def create_company():
 <pre><code class="python">@app.route(&#39;/review/create&#39;, methods=[&#39;POST&#39;])
 def create_post():
     &#34;&#34;&#34;
-        create_post() : a review guru can create a post that will be sent to the waitlist collection.
+        create_post() : a review guru can create a post that will be sent to the waitlist collection, review-guru/contributions, and the Posts collection.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -589,8 +618,9 @@ def create_post():
             id_token = request.headers[&#39;Authorization&#39;]
             claims = auth.verify_id_token(id_token)
             if claims[&#39;Review-guru&#39;] is True:
-                REVIEW_POSTS = REVIEW.document(post_id)
-                REVIEW_POSTS.set({
+                Review_contributions = REVIEW_GURU.document(created_by_id).collection(&#39;contributions&#39;).document(product_id)
+                Review_post = REVIEW_POST.document(product_id)
+                Review_post.set({
                     &#39;Created_by&#39;: created_by,
                     &#39;Created_by_id&#39;: created_by_id,
                     &#39;Date&#39; : date,
@@ -598,7 +628,15 @@ def create_post():
                     &#39;Product_name&#39;: product_name,
                     &#39;Summary&#39;: Summary,
                 })
-                review_guru_document = WAITLIST.document(post_id)
+                Review_contributions.set({
+                    &#39;Created_by&#39;: created_by,
+                    &#39;Created_by_id&#39;: created_by_id,
+                    &#39;Date&#39; : date,
+                    &#39;Product_id&#39;: product_id,
+                    &#39;Product_name&#39;: product_name,
+                    &#39;Summary&#39;: Summary,
+                })
+                review_guru_document = WAITLIST.document(company_id).collection(product_id).document(created_by_id)
                 review_guru_document.set({
                 &#39;Created_by&#39;: created_by,
                 &#39;Created_by_id&#39;: created_by_id,
@@ -798,9 +836,8 @@ def get_contributions():
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         if(claims[&#39;Review-guru&#39;] == True):
-            query_ref = REVIEW.where(u&#39;Created_by_id&#39;, u&#39;==&#39;, uid)
-            documents = [doc.to_dict() for doc in query_ref.stream()]
-            return (jsonify({&#34;Contributions&#34;:documents}),200)
+            query_ref = REVIEW_GURU.document(uid).collection(&#39;contributions&#39;).get()
+            return (jsonify(query_ref.to_dict()),200)
         else:
             return(jsonify({&#34;response&#34;:&#34;You are not authorised to create a review&#34;}))
     except Exception as e:
@@ -875,10 +912,11 @@ def get_products_inbox():
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
-        if(REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;) and claims[&#39;Review-guru&#39;] == True):
-            return jsonify(REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;).get().to_dict()),200
+        if(claims[&#39;Review-guru&#39;] == True):
+            query_ref = REVIEW_GURU.document(uid).collection(&#39;products-assigned&#39;).get()
+            return jsonify(query_ref.to_dict()),200
         else:
-            return jsonify(null), 200
+            return jsonify({&#34;success&#34;: False}), 200
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
@@ -887,7 +925,7 @@ def get_products_inbox():
 <span>def <span class="ident">get_user_by_id</span></span>(<span>id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>get_user_by_id(id) : get a certain user or review guru by their profile ID.</p></div>
+<div class="desc"><p>get_user_by_id(id) : get a certain review guru by their profile ID, since this information is public only non-sensitive information will be AVAILABLE.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -895,11 +933,31 @@ def get_products_inbox():
 <pre><code class="python">@app.route(&#39;/user/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
 def get_user_by_id(id):
     &#34;&#34;&#34;
-        get_user_by_id(id) : get a certain user or review guru by their profile ID.
+        get_user_by_id(id) : get a certain review guru by their profile ID, since this information is public only non-sensitive information will be AVAILABLE.
     &#34;&#34;&#34;
     try:
-        if(REVIEW_GURU.document(id).get()):
-            return jsonify(REVIEW_GURU.document(id).get().to_dict()),200
+        profile = REVIEW_GURU.document(id).get().to_dict()
+        if(profile):
+            bio = profile[&#39;bio&#39;]
+            profilePicture = profile[&#39;profilePicture&#39;]
+            username = profile[&#39;username&#39;]
+            review_scale = profile[&#39;review_scale&#39;]
+            first_name = profile[&#39;First_name&#39;]
+            last_name = profile[&#39;Last_name&#39;]
+            userID = profile[&#39;userID&#39;]
+            categories = profile[&#39;Categories&#39;]
+            contributions = REVIEW_GURU.document(id).collection(&#39;contributions&#39;)
+            documents = [doc.to_dict() for doc in contributions.stream()]
+            return jsonify({
+                &#34;username&#34;: username,
+                &#34;review_scale&#34;: review_scale,
+                &#34;bio&#34;: bio,
+                &#34;first_name&#34;: first_name,
+                &#34;last_name&#34;: last_name,
+                &#34;userID&#34;: userID,
+                &#34;category&#34;: categories,
+                &#34;contributions&#34;: documents
+            }),200
         else:
             return jsonify(null), 200
     except Exception as e:
@@ -951,7 +1009,7 @@ def make_enterprise_suggestion():
 <span>def <span class="ident">post_scrapping_link</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>post_scrapping_link(): Amazon scrapping link.</p></div>
+<div class="desc"><p>post_scrapping_link(): post amazon scrapping link, category, email.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -959,7 +1017,7 @@ def make_enterprise_suggestion():
 <pre><code class="python">@app.route(&#39;/review/scrape&#39;, methods=[&#39;POST&#39;])
 def post_scrapping_link():
     &#34;&#34;&#34;
-        post_scrapping_link(): Amazon scrapping link.
+        post_scrapping_link(): post amazon scrapping link, category, email.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
