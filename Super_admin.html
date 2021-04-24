@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>Super Admin API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Super Admin<code>v1</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># Required imports
+# this container will be pushed onto the BETA launch.
+# THIS WILL BE OPTIMIZED AFTER THE LAUNCH, AND THERE WILL BE MORE DOCUMENTATION.
+
+import os
+from flask import Flask, request, jsonify, render_template
+from datetime import datetime
+from firebase_admin import credentials, firestore, initialize_app, auth
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# Initialize Firestore DB
+cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5da7b.json&#39;)
+default_app = initialize_app(cred)
+db = firestore.client()
+REVIEW = db.collection(&#39;Posts&#39;)
+PRODUCT = db.collection(&#39;Product&#39;)
+COMPANY = db.collection(&#39;Companies&#39;)
+SUGGESTION = db.collection(&#39;Petitions&#39;)
+REVIEW_GURU = db.collection(&#39;Review-gurus&#39;)
+WAITLIST = db.collection(&#39;Waitlisted-review&#39;)
+BASIC_ANALYTICS = db.collection(&#39;Basic_analytics&#39;)
+ADVANCED_ANALYTICS = db.collection(&#39;Advanced_analytics&#39;)
+SCRAPPED = db.collection(&#39;Scrapped&#39;)
+
+
+@app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
+def Home():
+    &#34;&#34;&#34;
+        Home(): The home page with all documentation of the API
+    &#34;&#34;&#34;
+    return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;
+
+@app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
+def get_waitlist():
+    &#34;&#34;&#34;
+        get_waitlist(): This will return all the items in the waitlist
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in WAITLIST.stream()]
+        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+
+@app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
+def get_scrapped():
+    &#34;&#34;&#34;
+        get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in SCRAPPED.stream()]
+        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+
+@app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
+def get_scrapped_waitlist():
+    &#34;&#34;&#34;
+        get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
+    &#34;&#34;&#34;
+    try:
+        query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error has occured: {e}&#34;
+
+@app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
+def update_scrapped_link(id):
+    &#34;&#34;&#34;
+        update_scrapped_link(id): This will go remove scrapped link from the waitlist, so you no longer have to analyze it
+    &#34;&#34;&#34;
+    try:
+        doc = SCRAPPED.document(id) # doc is DocumentReference
+        field_updates = {&#34;processed&#34;: True}
+        doc.update(field_updates)
+        return jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_waitlist_by_product(id):
+    &#34;&#34;&#34;
+        get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
+    &#34;&#34;&#34;
+    try:
+        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({str(product_id):documents}),200)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
+def delete_product_waitlist(id):
+    &#34;&#34;&#34;
+        delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
+    &#34;&#34;&#34;
+    try:
+        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
+        documents = [doc.delete() for doc in query_ref.stream()]
+        return (jsonify({&#34;documents deleted&#34;}),200)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/analyze&#39;, methods =[&#39;POST&#39;])
+def post_advanced_analytics():
+    &#34;&#34;&#34;
+        post_advanced_analytics(): send processed reviews to basic analytics and advanced analytics.
+    &#34;&#34;&#34;
+    try:
+        data = request.json[&#39;data&#39;]
+        company_id = data[&#39;company_id&#39;]
+        product_id = data[&#39;product_id&#39;]
+        analytics_id = product_id
+        graph1 = data[&#39;1&#39;]
+        graph2 = data[&#39;2&#39;]
+        graph3 = data[&#39;3&#39;]
+        graph4 = data[&#39;4&#39;]
+        graph5 = data[&#39;5&#39;]
+        summary = data[&#39;summary&#39;] #this includes other types of information such as net promoter score, GPT type...etc
+        review_types = data[&#39;review_types&#39;]
+        word_cloud = data[&#39;word_cloud&#39;]
+#         sentiment_per_cat = data[&#39;Sentiment_per_category&#39;]
+        basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
+        basic_analytics_document.set({
+            &#39;company_id&#39;: company_id,
+            &#39;product_id&#39;: product_id,
+            &#39;1&#39;: graph1,
+            &#39;2&#39;: graph2,
+            &#39;analytics_id&#39;: analytics_id
+        })
+        advanced_analytics_document = ADVANCED_ANALYTICS.document(analytics_id)
+        advanced_analytics_document.set({
+            &#39;company_id&#39;: company_id,
+            &#39;product_id&#39;: product_id,
+            &#39;1&#39;: graph1,
+            &#39;2&#39;: graph2,
+            &#39;3&#39;: graph3,
+            &#39;4&#39;: graph4,
+            &#39;5&#39;: graph5,
+            &#39;summary&#39;: summary,
+            &#39;Review-types&#39;: review_types,
+            &#39;word-cloud&#39;: word_cloud,
+            &#39;analytics_id&#39;: analytics_id
+        })
+        doc = PRODUCT.document(product_id) # doc is Document Reference
+        field_updates = {&#34;processed&#34;: True}
+        doc.update(field_updates)
+        return jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/review-gurus&#39;, methods=[&#39;GET&#39;])
+def get_review_gurus():
+    &#34;&#34;&#34;
+        get_review_gurus(): get all review gurus in our system
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in REVIEW_GURU.stream()]
+        return (jsonify({&#34;All Review Gurus&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/review-gurus/assign&#39;, methods=[&#39;POST&#39;])
+def assign_products():
+    &#34;&#34;&#34;
+        assign_products(): assign products to users by passing in their IDs in an array
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        data = request.json[&#39;data&#39;]
+        product_id = data[&#39;product_id&#39;]
+        product_name = data[&#39;product_name&#39;]
+        date = datetime.timestamp(now)
+        product_category = data[&#39;product_category&#39;]
+        review_gurus = data[&#39;review_guru_ids&#39;]
+        for i in review_gurus:
+            products_assigned = REVIEW_GURU.document(i).collection(&#39;products_assigned&#39;).document(product_id)
+            products_assigned.set({
+                &#39;review_flag&#39;: False,
+                &#39;product_id&#39;: product_id,
+                &#39;product_name&#39;: product_name,
+                &#39;basic_analytics_link&#39;: &#34;null&#34;,
+                &#39;date_assigned&#39;: date,
+                &#39;date_shipped&#39;: &#34;&#34;,
+                &#39;date_recieved&#39;: &#34;&#34;,
+                &#39;due_date&#39;:&#34;&#34;
+            })
+            print(&#34;Review Guru assigned = &#34;, i)
+        doc = PRODUCT.document(product_id) # doc is DocumentReference
+        field_updates = {&#34;assigned&#34;: True}
+        doc.update(field_updates)
+        return  jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/all-products&#39;, methods=[&#39;GET&#39;])
+def get_products():
+    &#34;&#34;&#34;
+        assign_products(): assign products to users by passing in their IDs in an array
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in PRODUCT.stream()]
+        return (jsonify({&#34;All Products&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/product/assign&#39;, methods=[&#39;GET&#39;])
+def get_products_to_be_assgined():
+    &#34;&#34;&#34;
+        get_products_to_be_assgined(): Get all products that are yet to be assigned
+    &#34;&#34;&#34;
+    try:
+        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;Products to be assigned&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error has Occured: {e}&#34;
+
+
+
+port = int(os.environ.get(&#39;PORT&#39;, 8080))
+if __name__ == &#39;__main__&#39;:
+    app.run(threaded=True, host=&#39;0.0.0.0&#39;, port=port)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="app.Home"><code class="name flex">
+<span>def <span class="ident">Home</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Home(): The home page with all documentation of the API</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
+def Home():
+    &#34;&#34;&#34;
+        Home(): The home page with all documentation of the API
+    &#34;&#34;&#34;
+    return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.assign_products"><code class="name flex">
+<span>def <span class="ident">assign_products</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>assign_products(): assign products to users by passing in their IDs in an array</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/review-gurus/assign&#39;, methods=[&#39;POST&#39;])
+def assign_products():
+    &#34;&#34;&#34;
+        assign_products(): assign products to users by passing in their IDs in an array
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        data = request.json[&#39;data&#39;]
+        product_id = data[&#39;product_id&#39;]
+        product_name = data[&#39;product_name&#39;]
+        date = datetime.timestamp(now)
+        product_category = data[&#39;product_category&#39;]
+        review_gurus = data[&#39;review_guru_ids&#39;]
+        for i in review_gurus:
+            products_assigned = REVIEW_GURU.document(i).collection(&#39;products_assigned&#39;).document(product_id)
+            products_assigned.set({
+                &#39;review_flag&#39;: False,
+                &#39;product_id&#39;: product_id,
+                &#39;product_name&#39;: product_name,
+                &#39;basic_analytics_link&#39;: &#34;null&#34;,
+                &#39;date_assigned&#39;: date,
+                &#39;date_shipped&#39;: &#34;&#34;,
+                &#39;date_recieved&#39;: &#34;&#34;,
+                &#39;due_date&#39;:&#34;&#34;
+            })
+            print(&#34;Review Guru assigned = &#34;, i)
+        doc = PRODUCT.document(product_id) # doc is DocumentReference
+        field_updates = {&#34;assigned&#34;: True}
+        doc.update(field_updates)
+        return  jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.delete_product_waitlist"><code class="name flex">
+<span>def <span class="ident">delete_product_waitlist</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
+def delete_product_waitlist(id):
+    &#34;&#34;&#34;
+        delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
+    &#34;&#34;&#34;
+    try:
+        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
+        documents = [doc.delete() for doc in query_ref.stream()]
+        return (jsonify({&#34;documents deleted&#34;}),200)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_products"><code class="name flex">
+<span>def <span class="ident">get_products</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>assign_products(): assign products to users by passing in their IDs in an array</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/all-products&#39;, methods=[&#39;GET&#39;])
+def get_products():
+    &#34;&#34;&#34;
+        assign_products(): assign products to users by passing in their IDs in an array
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in PRODUCT.stream()]
+        return (jsonify({&#34;All Products&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_products_to_be_assgined"><code class="name flex">
+<span>def <span class="ident">get_products_to_be_assgined</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_products_to_be_assgined(): Get all products that are yet to be assigned</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/product/assign&#39;, methods=[&#39;GET&#39;])
+def get_products_to_be_assgined():
+    &#34;&#34;&#34;
+        get_products_to_be_assgined(): Get all products that are yet to be assigned
+    &#34;&#34;&#34;
+    try:
+        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;Products to be assigned&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error has Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_review_gurus"><code class="name flex">
+<span>def <span class="ident">get_review_gurus</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_review_gurus(): get all review gurus in our system</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/review-gurus&#39;, methods=[&#39;GET&#39;])
+def get_review_gurus():
+    &#34;&#34;&#34;
+        get_review_gurus(): get all review gurus in our system
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in REVIEW_GURU.stream()]
+        return (jsonify({&#34;All Review Gurus&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_scrapped"><code class="name flex">
+<span>def <span class="ident">get_scrapped</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
+def get_scrapped():
+    &#34;&#34;&#34;
+        get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in SCRAPPED.stream()]
+        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_scrapped_waitlist"><code class="name flex">
+<span>def <span class="ident">get_scrapped_waitlist</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
+def get_scrapped_waitlist():
+    &#34;&#34;&#34;
+        get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
+    &#34;&#34;&#34;
+    try:
+        query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error has occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_waitlist"><code class="name flex">
+<span>def <span class="ident">get_waitlist</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_waitlist(): This will return all the items in the waitlist</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
+def get_waitlist():
+    &#34;&#34;&#34;
+        get_waitlist(): This will return all the items in the waitlist
+    &#34;&#34;&#34;
+    try:
+        documents = [doc.to_dict() for doc in WAITLIST.stream()]
+        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_waitlist_by_product"><code class="name flex">
+<span>def <span class="ident">get_waitlist_by_product</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_waitlist_by_product(id):
+    &#34;&#34;&#34;
+        get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
+    &#34;&#34;&#34;
+    try:
+        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({str(product_id):documents}),200)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.post_advanced_analytics"><code class="name flex">
+<span>def <span class="ident">post_advanced_analytics</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>post_advanced_analytics(): send processed reviews to basic analytics and advanced analytics.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/analyze&#39;, methods =[&#39;POST&#39;])
+def post_advanced_analytics():
+    &#34;&#34;&#34;
+        post_advanced_analytics(): send processed reviews to basic analytics and advanced analytics.
+    &#34;&#34;&#34;
+    try:
+        data = request.json[&#39;data&#39;]
+        company_id = data[&#39;company_id&#39;]
+        product_id = data[&#39;product_id&#39;]
+        analytics_id = product_id
+        graph1 = data[&#39;1&#39;]
+        graph2 = data[&#39;2&#39;]
+        graph3 = data[&#39;3&#39;]
+        graph4 = data[&#39;4&#39;]
+        graph5 = data[&#39;5&#39;]
+        summary = data[&#39;summary&#39;] #this includes other types of information such as net promoter score, GPT type...etc
+        review_types = data[&#39;review_types&#39;]
+        word_cloud = data[&#39;word_cloud&#39;]
+#         sentiment_per_cat = data[&#39;Sentiment_per_category&#39;]
+        basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
+        basic_analytics_document.set({
+            &#39;company_id&#39;: company_id,
+            &#39;product_id&#39;: product_id,
+            &#39;1&#39;: graph1,
+            &#39;2&#39;: graph2,
+            &#39;analytics_id&#39;: analytics_id
+        })
+        advanced_analytics_document = ADVANCED_ANALYTICS.document(analytics_id)
+        advanced_analytics_document.set({
+            &#39;company_id&#39;: company_id,
+            &#39;product_id&#39;: product_id,
+            &#39;1&#39;: graph1,
+            &#39;2&#39;: graph2,
+            &#39;3&#39;: graph3,
+            &#39;4&#39;: graph4,
+            &#39;5&#39;: graph5,
+            &#39;summary&#39;: summary,
+            &#39;Review-types&#39;: review_types,
+            &#39;word-cloud&#39;: word_cloud,
+            &#39;analytics_id&#39;: analytics_id
+        })
+        doc = PRODUCT.document(product_id) # doc is Document Reference
+        field_updates = {&#34;processed&#34;: True}
+        doc.update(field_updates)
+        return jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.update_scrapped_link"><code class="name flex">
+<span>def <span class="ident">update_scrapped_link</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>update_scrapped_link(id): This will go remove scrapped link from the waitlist, so you no longer have to analyze it</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
+def update_scrapped_link(id):
+    &#34;&#34;&#34;
+        update_scrapped_link(id): This will go remove scrapped link from the waitlist, so you no longer have to analyze it
+    &#34;&#34;&#34;
+    try:
+        doc = SCRAPPED.document(id) # doc is DocumentReference
+        field_updates = {&#34;processed&#34;: True}
+        doc.update(field_updates)
+        return jsonify({&#34;success&#34;: True}), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="app.Home" href="#app.Home">Home</a></code></li>
+<li><code><a title="app.assign_products" href="#app.assign_products">assign_products</a></code></li>
+<li><code><a title="app.delete_product_waitlist" href="#app.delete_product_waitlist">delete_product_waitlist</a></code></li>
+<li><code><a title="app.get_products" href="#app.get_products">get_products</a></code></li>
+<li><code><a title="app.get_products_to_be_assgined" href="#app.get_products_to_be_assgined">get_products_to_be_assgined</a></code></li>
+<li><code><a title="app.get_review_gurus" href="#app.get_review_gurus">get_review_gurus</a></code></li>
+<li><code><a title="app.get_scrapped" href="#app.get_scrapped">get_scrapped</a></code></li>
+<li><code><a title="app.get_scrapped_waitlist" href="#app.get_scrapped_waitlist">get_scrapped_waitlist</a></code></li>
+<li><code><a title="app.get_waitlist" href="#app.get_waitlist">get_waitlist</a></code></li>
+<li><code><a title="app.get_waitlist_by_product" href="#app.get_waitlist_by_product">get_waitlist_by_product</a></code></li>
+<li><code><a title="app.post_advanced_analytics" href="#app.post_advanced_analytics">post_advanced_analytics</a></code></li>
+<li><code><a title="app.update_scrapped_link" href="#app.update_scrapped_link">update_scrapped_link</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
