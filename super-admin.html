@@ -278,7 +278,9 @@ def get_products_to_be_assgined():
         get_products_to_be_assgined(): Get all products that are yet to be assigned
     &#34;&#34;&#34;
     try:
-        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False)
+        # This Query is checking if a product has not be assigned and the company wants review gurus as well.
+        # The reason for 2 flags is that, you don&#39;t want automatically assume companies always want review gurus.
+        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False).where(u&#39;review_guru_analytics&#39;, &#39;==&#39;, True)
         documents = [doc.to_dict() for doc in query_ref.stream()]
         return (jsonify({&#34;Products to be assigned&#34;: documents}),200)
     except Exception as e:
@@ -457,7 +459,9 @@ def get_products_to_be_assgined():
         get_products_to_be_assgined(): Get all products that are yet to be assigned
     &#34;&#34;&#34;
     try:
-        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False)
+        # This Query is checking if a product has not be assigned and the company wants review gurus as well.
+        # The reason for 2 flags is that, you don&#39;t want automatically assume companies always want review gurus.
+        query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False).where(u&#39;review_guru_analytics&#39;, &#39;==&#39;, True)
         documents = [doc.to_dict() for doc in query_ref.stream()]
         return (jsonify({&#34;Products to be assigned&#34;: documents}),200)
     except Exception as e:
