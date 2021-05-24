@@ -32,6 +32,7 @@
 # THIS WILL BE OPTIMIZED AFTER THE LAUNCH, AND THERE WILL BE MORE DOCUMENTATION.
 
 import os
+import openai
 from flask_cors import CORS, cross_origin
 from flask import Flask, request, jsonify, render_template
 from datetime import datetime
@@ -43,9 +44,11 @@ app = Flask(__name__)
 CORS(app)
 # Initialize Firestore DB
 cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5da7b.json&#39;)
+openai.api_key = (&#34;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&#34;)
 default_app = initialize_app(cred)
 db = firestore.client()
 SCRAPPER = db.collection(&#39;Scrapped&#39;)
+GPT3QA = db.collection(&#39;GPT3-QA&#39;)
 REVIEW_POST = db.collection(&#39;Posts&#39;)
 USERS = db.collection(&#39;Users&#39;)
 PRODUCT = db.collection(&#39;Product&#39;)
@@ -330,6 +333,66 @@ def make_enterprise_suggestion():
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
+@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;])
+def ask_ai_question(id):
+    &#34;&#34;&#34;
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        id_token = request.headers[&#39;Authorization&#39;]
+        claims = auth.verify_id_token(id_token)
+        uid = claims[&#39;uid&#39;]
+        data = request.json[&#39;data&#39;]
+        question = request[&#39;question&#39;]
+        date = datetime.timestamp(now)
+        if claims[&#39;Enterpise&#39;] is True:
+            todo = GPT3QA.document(id).get()
+            if todo[&#39;company_id&#39;] == uid:
+                response = openai.Answer.create(
+                    search_model=&#34;ada&#34;,
+                    model=&#34;curie&#34;,
+                    question=str(question),
+                    file=todo[&#39;gpt3_form_id&#39;],
+                    examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
+                    examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
+                              [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                    max_tokens=40,
+                    stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
+                )
+                todo.set({
+                    str(question): response[&#39;answers&#39;],
+                }, merge=True)
+
+                return jsonify({&#34;Answer&#34;: response[&#39;answers&#39;]}), 200
+            else:
+                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+        else:
+            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#34;/enterprise/product=&lt;id&gt;/ai&#34;, methods=[&#39;GET&#39;])
+def get_gpt3_data(id):
+    &#34;&#34;&#34;
+         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers
+    &#34;&#34;&#34;
+    try:
+        id_token = request.headers[&#39;Authorization&#39;]
+        claims = auth.verify_id_token(id_token)
+        uid = claims[&#39;uid&#39;]
+        if claims[&#39;Enterpise&#39;] is True:
+            todo = GPT3QA.document(id).get()
+            if todo[&#39;company_id&#39;] == uid:
+                return (jsonify({todo.to_dict()}),200)
+            else:
+                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+        else:
+            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+
 
 @app.route(&#39;/enterprise/products&#39;, methods=[&#39;GET&#39;])
 def get_products_by_company():
@@ -359,9 +422,12 @@ def get_advanced_analytics(id):
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid  = claims[&#39;uid&#39;]
-        if claims[&#39;Enterprise&#39;]:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = ADVANCED_ANALYTICS.document(id).get()
-            return jsonify(todo.to_dict()), 200
+            if todo[&#39;company_id&#39;] == uid:
+                return jsonify(todo.to_dict()), 200
+            else:
+                return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
             return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this specific enterpise analytics page.&#34;}), 404)
     except Exception as e:
@@ -572,6 +638,55 @@ def Home():
         Home(): The home page with all documentation of the API
     &#34;&#34;&#34;
     return &#34;&lt;h1&gt; Welcome to the Pondr API &lt;/h1&gt;&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.ask_ai_question"><code class="name flex">
+<span>def <span class="ident">ask_ai_question</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;])
+def ask_ai_question(id):
+    &#34;&#34;&#34;
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        id_token = request.headers[&#39;Authorization&#39;]
+        claims = auth.verify_id_token(id_token)
+        uid = claims[&#39;uid&#39;]
+        data = request.json[&#39;data&#39;]
+        question = request[&#39;question&#39;]
+        date = datetime.timestamp(now)
+        if claims[&#39;Enterpise&#39;] is True:
+            todo = GPT3QA.document(id).get()
+            if todo[&#39;company_id&#39;] == uid:
+                response = openai.Answer.create(
+                    search_model=&#34;ada&#34;,
+                    model=&#34;curie&#34;,
+                    question=str(question),
+                    file=todo[&#39;gpt3_form_id&#39;],
+                    examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
+                    examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
+                              [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                    max_tokens=40,
+                    stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
+                )
+                todo.set({
+                    str(question): response[&#39;answers&#39;],
+                }, merge=True)
+
+                return jsonify({&#34;Answer&#34;: response[&#39;answers&#39;]}), 200
+            else:
+                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+        else:
+            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.create_company"><code class="name flex">
@@ -823,9 +938,12 @@ def get_advanced_analytics(id):
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid  = claims[&#39;uid&#39;]
-        if claims[&#39;Enterprise&#39;]:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = ADVANCED_ANALYTICS.document(id).get()
-            return jsonify(todo.to_dict()), 200
+            if todo[&#39;company_id&#39;] == uid:
+                return jsonify(todo.to_dict()), 200
+            else:
+                return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
             return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this specific enterpise analytics page.&#34;}), 404)
     except Exception as e:
@@ -901,6 +1019,36 @@ def get_contributions():
             return (jsonify(query_ref.to_dict()),200)
         else:
             return(jsonify({&#34;response&#34;:&#34;You are not authorised to create a review&#34;}), 404)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_gpt3_data"><code class="name flex">
+<span>def <span class="ident">get_gpt3_data</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_gpt3_data(id): Companies can see GPT-3 asked questions/answers</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#34;/enterprise/product=&lt;id&gt;/ai&#34;, methods=[&#39;GET&#39;])
+def get_gpt3_data(id):
+    &#34;&#34;&#34;
+         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers
+    &#34;&#34;&#34;
+    try:
+        id_token = request.headers[&#39;Authorization&#39;]
+        claims = auth.verify_id_token(id_token)
+        uid = claims[&#39;uid&#39;]
+        if claims[&#39;Enterpise&#39;] is True:
+            todo = GPT3QA.document(id).get()
+            if todo[&#39;company_id&#39;] == uid:
+                return (jsonify({todo.to_dict()}),200)
+            else:
+                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+        else:
+            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
@@ -1206,6 +1354,7 @@ def review_guru_suggestion():
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="app.Home" href="#app.Home">Home</a></code></li>
+<li><code><a title="app.ask_ai_question" href="#app.ask_ai_question">ask_ai_question</a></code></li>
 <li><code><a title="app.create_company" href="#app.create_company">create_company</a></code></li>
 <li><code><a title="app.create_post" href="#app.create_post">create_post</a></code></li>
 <li><code><a title="app.create_product" href="#app.create_product">create_product</a></code></li>
@@ -1214,6 +1363,7 @@ def review_guru_suggestion():
 <li><code><a title="app.get_basic_analytics" href="#app.get_basic_analytics">get_basic_analytics</a></code></li>
 <li><code><a title="app.get_comments" href="#app.get_comments">get_comments</a></code></li>
 <li><code><a title="app.get_contributions" href="#app.get_contributions">get_contributions</a></code></li>
+<li><code><a title="app.get_gpt3_data" href="#app.get_gpt3_data">get_gpt3_data</a></code></li>
 <li><code><a title="app.get_products_by_category" href="#app.get_products_by_category">get_products_by_category</a></code></li>
 <li><code><a title="app.get_products_by_company" href="#app.get_products_by_company">get_products_by_company</a></code></li>
 <li><code><a title="app.get_products_inbox" href="#app.get_products_inbox">get_products_inbox</a></code></li>
