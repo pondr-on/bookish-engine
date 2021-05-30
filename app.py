@@ -277,7 +277,7 @@ def ask_ai_question(id):
         question = request['question']
         date = datetime.timestamp(now)
         if claims['Enterpise'] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo['company_id'] == uid:
                 response = openai.Answer.create(
                     search_model="ada",
@@ -312,16 +312,15 @@ def get_gpt3_data(id):
         claims = auth.verify_id_token(id_token)
         uid = claims['uid']
         if claims['Enterpise'] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo['company_id'] == uid:
-                return (jsonify({todo.to_dict()}),200)
+                return (jsonify({todo}),200)
             else:
                 return (jsonify({"response":"You are not authorized to view this page"}), 403)
         else:
             return (jsonify({"response":"You are not authorized to view this page"}), 403)
     except Exception as e:
         return f"An Error Occured: {e}"
-
 
 
 @app.route('/enterprise/products', methods=['GET'])
@@ -355,7 +354,7 @@ def get_advanced_analytics(id):
         if claims['Enterprise'] is True:
             todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
             if todo['company_id'] == uid:
-                return jsonify(todo), 200
+                return jsonify({todo}), 200
             else:
                 return (jsonify({"Access Denied"}), 403)
         else:
@@ -382,6 +381,7 @@ def create_product():
             Date = datetime.timestamp(now)
             Product_id = str(Date)+ uid
             Product_name = data['Product_name']
+            Amazon_link = data['amazon_link']
             product_document = PRODUCT.document(Product_id)
             product_document.set({
                 'Category' : Category,
@@ -389,9 +389,9 @@ def create_product():
                 'Company_id' : Company_id,
                 'Product_entry_date': Date,
                 'Product_id': Product_id,
-                #this is the path on google firestore Storage for images
                 'Product_images_path': "enterpise/"+str(Product_id)+"/",
                 'Product_name': Product_name,
+                'Amazon_link': Amazon_link,
                 'processed': False,
                 'assigned' : False,
                 'review_guru_analytics': False

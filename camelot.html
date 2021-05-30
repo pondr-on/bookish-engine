@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>API</code></h1>
-<p>Poopy :)</p>
+<p>Last Updated: 5/30/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -306,7 +306,7 @@ def ask_ai_question(id):
         question = request[&#39;question&#39;]
         date = datetime.timestamp(now)
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
@@ -341,16 +341,15 @@ def get_gpt3_data(id):
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return (jsonify({todo.to_dict()}),200)
+                return (jsonify({todo}),200)
             else:
                 return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
         else:
             return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
-
 
 
 @app.route(&#39;/enterprise/products&#39;, methods=[&#39;GET&#39;])
@@ -384,7 +383,7 @@ def get_advanced_analytics(id):
         if claims[&#39;Enterprise&#39;] is True:
             todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return jsonify(todo), 200
+                return jsonify({todo}), 200
             else:
                 return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
@@ -411,6 +410,7 @@ def create_product():
             Date = datetime.timestamp(now)
             Product_id = str(Date)+ uid
             Product_name = data[&#39;Product_name&#39;]
+            Amazon_link = data[&#39;amazon_link&#39;]
             product_document = PRODUCT.document(Product_id)
             product_document.set({
                 &#39;Category&#39; : Category,
@@ -418,9 +418,9 @@ def create_product():
                 &#39;Company_id&#39; : Company_id,
                 &#39;Product_entry_date&#39;: Date,
                 &#39;Product_id&#39;: Product_id,
-                #this is the path on google firestore Storage for images
                 &#39;Product_images_path&#39;: &#34;enterpise/&#34;+str(Product_id)+&#34;/&#34;,
                 &#39;Product_name&#39;: Product_name,
+                &#39;Amazon_link&#39;: Amazon_link,
                 &#39;processed&#39;: False,
                 &#39;assigned&#39; : False,
                 &#39;review_guru_analytics&#39;: False
@@ -499,7 +499,7 @@ def ask_ai_question(id):
         question = request[&#39;question&#39;]
         date = datetime.timestamp(now)
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
@@ -678,6 +678,7 @@ def create_product():
             Date = datetime.timestamp(now)
             Product_id = str(Date)+ uid
             Product_name = data[&#39;Product_name&#39;]
+            Amazon_link = data[&#39;amazon_link&#39;]
             product_document = PRODUCT.document(Product_id)
             product_document.set({
                 &#39;Category&#39; : Category,
@@ -685,9 +686,9 @@ def create_product():
                 &#39;Company_id&#39; : Company_id,
                 &#39;Product_entry_date&#39;: Date,
                 &#39;Product_id&#39;: Product_id,
-                #this is the path on google firestore Storage for images
                 &#39;Product_images_path&#39;: &#34;enterpise/&#34;+str(Product_id)+&#34;/&#34;,
                 &#39;Product_name&#39;: Product_name,
+                &#39;Amazon_link&#39;: Amazon_link,
                 &#39;processed&#39;: False,
                 &#39;assigned&#39; : False,
                 &#39;review_guru_analytics&#39;: False
@@ -720,7 +721,7 @@ def get_advanced_analytics(id):
         if claims[&#39;Enterprise&#39;] is True:
             todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return jsonify(todo), 200
+                return jsonify({todo}), 200
             else:
                 return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
@@ -797,9 +798,9 @@ def get_gpt3_data(id):
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get()
+            todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return (jsonify({todo.to_dict()}),200)
+                return (jsonify({todo}),200)
             else:
                 return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
         else:
@@ -1037,7 +1038,7 @@ def review_guru_suggestion():
 </section>
 </article>
 <nav id="sidebar">
-<h1 style="color:white;">Index</h1>
+<h1>Index</h1>
 <div class="toc">
 <ul></ul>
 </div>
