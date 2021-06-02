@@ -8,7 +8,7 @@ from firebase_admin import credentials, firestore, initialize_app, auth
 app = Flask(__name__)
 #
 
-@app.route('/auth/enterpise', methods=['POST'])
+@app.route('/auth/enterprise', methods=['POST', 'GET'])
 def create_company():
     """
         create_company(): companies can create a account.
@@ -28,26 +28,30 @@ def create_company():
         Company_website = data['company_website']
         Outreach_type = data['outreach_type']
         Company_logo = data['company_logo']
+        beta_key = data['beta_key']
         survey_questions = data['survey_questions']
-        user = auth.create_user(phone_number = Phone_number, password = password,email=Email, display_name=Company_name)
-        auth.set_custom_user_claims(user.uid, {'Enterprise': True})
-        company_document = COMPANY.document(user.uid)
-        company_document.set({
-            'company_name' : Company_name,
-            'company_id' : user.uid,
-            'address' : Address,
-            'phone_number' : Phone_number,
-            'email' : Email,
-            'person_of_contact_first' : Person_of_contact_first,
-            'person_of_contact_last' : Person_of_contact_last,
-            'company_website' : Company_website,
-            'category' : Category,
-            'date' : Date,
-            'company_logo': Company_logo,
-            'outreach_type': Outreach_type,
-            'survey_questions': survey_questions
-        })
-        return jsonify({"success":True}), 200
+        if beta_key == "BfFQKJ9vIf":
+            user = auth.create_user(phone_number = Phone_number, password = password,email=Email, display_name=Company_name)
+            auth.set_custom_user_claims(user.uid, {'Enterprise': True})
+            company_document = COMPANY.document(user.uid)
+            company_document.set({
+                'company_name' : Company_name,
+                'company_id' : user.uid,
+                'address' : Address,
+                'phone_number' : Phone_number,
+                'email' : Email,
+                'person_of_contact_first' : Person_of_contact_first,
+                'person_of_contact_last' : Person_of_contact_last,
+                'company_website' : Company_website,
+                'category' : Category,
+                'date' : Date,
+                'company_logo': Company_logo,
+                'outreach_type': Outreach_type,
+                'survey_questions': survey_questions
+            })
+            return jsonify({"success":True}), 200
+        else:
+            return jsonify("Please Enter Correct BETA Key"), 403
     except Exception as e:
         return f"An Error Occured: {e}"
 
@@ -159,7 +163,7 @@ def create_post():
                 'Review_processed': False
                 })
         else:
-             return(jsonify({"response":"You are not authorised to create a review"}))
+             return jsonify("You are not authorised to create a review"), 403
         return jsonify({"success": True}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
@@ -314,7 +318,7 @@ def get_gpt3_data(id):
         if claims['Enterpise'] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo['company_id'] == uid:
-                return (jsonify({todo}),200)
+                return (jsonify(todo),200)
             else:
                 return (jsonify({"response":"You are not authorized to view this page"}), 403)
         else:
@@ -354,7 +358,7 @@ def get_advanced_analytics(id):
         if claims['Enterprise'] is True:
             todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
             if todo['company_id'] == uid:
-                return jsonify({todo}), 200
+                return jsonify(todo), 200
             else:
                 return (jsonify({"Access Denied"}), 403)
         else:
