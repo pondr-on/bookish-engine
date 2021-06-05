@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>API</code></h1>
-<p>Last Updated: 6/2/2021</p>
+<p>Last Updated: 6/5/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -307,31 +307,32 @@ def ask_ai_question(id):
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         data = request.json[&#39;data&#39;]
-        question = request[&#39;question&#39;]
+        question = data[&#39;question&#39;]
         date = datetime.timestamp(now)
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get().to_dict()
+            todo = GPT3QA.document(id)
+            todo_dict = todo.get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
                     question=str(question),
-                    file=todo[&#39;gpt3_form_id&#39;],
+                    file=todo_dict[&#39;gpt3_form_id&#39;],
                     examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
                     examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
-                              [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                                [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
                 todo.set({
-                    str(question): response[&#39;answers&#39;],
+                    str(question): str(response[&#39;answers&#39;]),
                 }, merge=True)
 
-                return jsonify({&#34;Answer&#34;: response[&#39;answers&#39;]}), 200
+                return jsonify(str(response[&#39;answers&#39;])), 200
             else:
-                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+                return (&#34;You are not authorized to view this page&#34;), 403
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (&#34;You are not authorized to view this page&#34;), 403
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -500,31 +501,32 @@ def ask_ai_question(id):
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
         data = request.json[&#39;data&#39;]
-        question = request[&#39;question&#39;]
+        question = data[&#39;question&#39;]
         date = datetime.timestamp(now)
         if claims[&#39;Enterpise&#39;] is True:
-            todo = GPT3QA.document(id).get().to_dict()
+            todo = GPT3QA.document(id)
+            todo_dict = todo.get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
                     question=str(question),
-                    file=todo[&#39;gpt3_form_id&#39;],
+                    file=todo_dict[&#39;gpt3_form_id&#39;],
                     examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
                     examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
-                              [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                                [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
                 todo.set({
-                    str(question): response[&#39;answers&#39;],
+                    str(question): str(response[&#39;answers&#39;]),
                 }, merge=True)
 
-                return jsonify({&#34;Answer&#34;: response[&#39;answers&#39;]}), 200
+                return jsonify(str(response[&#39;answers&#39;])), 200
             else:
-                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+                return (&#34;You are not authorized to view this page&#34;), 403
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (&#34;You are not authorized to view this page&#34;), 403
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>

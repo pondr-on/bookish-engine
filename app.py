@@ -278,31 +278,32 @@ def ask_ai_question(id):
         claims = auth.verify_id_token(id_token)
         uid = claims['uid']
         data = request.json['data']
-        question = request['question']
+        question = data['question']
         date = datetime.timestamp(now)
         if claims['Enterpise'] is True:
-            todo = GPT3QA.document(id).get().to_dict()
+            todo = GPT3QA.document(id)
+            todo_dict = todo.get().to_dict()
             if todo['company_id'] == uid:
                 response = openai.Answer.create(
                     search_model="ada",
                     model="curie",
                     question=str(question),
-                    file=todo['gpt3_form_id'],
+                    file=todo_dict['gpt3_form_id'],
                     examples_context="In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest",
                     examples=[["What is human life expectancy in the United States?", "78 years."],
-                              ["what is the population of Seattle?", "Seattle's population is 724,305"]],
+                                ["what is the population of Seattle?", "Seattle's population is 724,305"]],
                     max_tokens=40,
                     stop=["\n", "<|endoftext|>"],
                 )
                 todo.set({
-                    str(question): response['answers'],
+                    str(question): str(response['answers']),
                 }, merge=True)
 
-                return jsonify({"Answer": response['answers']}), 200
+                return jsonify(str(response['answers'])), 200
             else:
-                return (jsonify({"response":"You are not authorized to view this page"}), 403)
+                return ("You are not authorized to view this page"), 403
         else:
-            return (jsonify({"response":"You are not authorized to view this page"}), 403)
+            return ("You are not authorized to view this page"), 403
     except Exception as e:
         return f"An Error Occured: {e}"
 
