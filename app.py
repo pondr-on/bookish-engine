@@ -55,184 +55,6 @@ def create_company():
     except Exception as e:
         return f"An Error Occured: {e}"
 
-""" ------------------------------------------------
-PUBLIC ROUTES (AVAILABLE TO EVERYONE ON THE INTERNET)
------------------------------------------------- """
-@app.route('/product/<id>/', methods=['GET'])
-def get_basic_analytics(id):
-    """
-        get_basic_analytics(id): get basic analytics of a certain product by their ID.
-    """
-    try:
-        todo = PRODUCT.document(id).get()
-        todo2 = BASIC_ANALYTICS.document(id).get()
-        return jsonify({"PRODUCT: ":todo.to_dict(),"BASIC_ANALYTICS: ": todo2.to_dict()}), 200
-    except Exception as e:
-        return f"An error Occured: {e}"
-
-@app.route('/review/scrape', methods=['POST'])
-def post_scrapping_link():
-    """
-        post_scrapping_link(): post amazon scrapping link, category, email.
-    """
-    now = datetime.now()
-    try:
-        data = request.json['data']
-        link = data['link']
-        email = data['email']
-        category = data['category']
-        date = datetime.timestamp(now)
-        query_ref = SCRAPPER.where(u'link', u'==',link)
-        documents = [doc.to_dict() for doc in query_ref.stream()] #this is a very expensive call
-        if (len(documents) >0):
-            return jsonify({"success": False}), 200
-        else:
-            Scrapping_document = SCRAPPER.document(str(date)+str(category))
-            Scrapping_document.set({
-                'email': email,
-                'link': link,
-                'category': category,
-                'processed': False,
-                'date': date,
-                'ip_address':request.remote_addr
-            })
-            return jsonify({"success": True}), 200
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
-
-"""------------------------------------------------
-REVIEW GURU ROUTES (AVAILABLE TO REVIEW GURUS)
-------------------------------------------------"""
-
-@app.route('/review/create', methods=['POST'])
-def create_post():
-    """
-        create_post() : a review guru can create a post that will be sent to the waitlist collection, review-guru/contributions, and the Posts collection.
-    """
-    now = datetime.now()
-    try:
-        id_token = request.headers['Authorization']
-        claims = auth.verify_id_token(id_token)
-        uid  = claims['uid']
-        if claims['Review-guru'] is True:
-            data = request.json['data']
-            created_by = data['Created_by']
-            created_by_id = data['Created_by_id']
-            date = datetime.timestamp(now)
-            post_title = data['Post_title']
-            product_name = data['Product_name']
-            Summary = data['Comments']
-            product_name = data['Product_name']
-            product_id = data['Product_id']
-            company_id = data['Company_id']
-            post_id = str(created_by_id)+str(product_id)+str(date)
-            questions = data['Questions']
-
-            id_token = request.headers['Authorization']
-            claims = auth.verify_id_token(id_token)
-            if claims['Review-guru'] is True:
-                Review_contributions = REVIEW_GURU.document(created_by_id).collection('contributions').document(product_id)
-                Review_post = REVIEW_POST.document(product_id)
-                Review_post.set({
-                    'Created_by': created_by,
-                    'Created_by_id': created_by_id,
-                    'Date' : date,
-                    'Product_id': product_id,
-                    'Product_name': product_name,
-                    'Summary': Summary,
-                })
-                Review_contributions.set({
-                    'Created_by': created_by,
-                    'Created_by_id': created_by_id,
-                    'Date' : date,
-                    'Product_id': product_id,
-                    'Product_name': product_name,
-                    'Summary': Summary,
-                })
-                review_guru_document = WAITLIST.document(company_id).collection(product_id).document(created_by_id)
-                review_guru_document.set({
-                'Created_by': created_by,
-                'Created_by_id': created_by_id,
-                'Date': date,
-                'Questions': Questions,
-                'Post_title': post_title,
-                'Product_id': product_id,
-                'Product_name': product_name,
-                'Company_id': company_id,
-                'Review_processed': False
-                })
-        else:
-             return jsonify("You are not authorised to create a review"), 403
-        return jsonify({"success": True}), 200
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
-@app.route('/review-guru/inbox', methods=['GET'])
-def get_products_inbox():
-    """
-        get_product_inbox() : get the list of products assigned to the review-guru.
-    """
-    try:
-        id_token = request.headers['Authorization']
-        claims = auth.verify_id_token(id_token)
-        uid = claims['uid']
-        if(claims['Review-guru'] == True):
-            query_ref = REVIEW_GURU.document(uid).collection('products-assigned').get()
-            return jsonify(query_ref.to_dict()),200
-        else:
-            return jsonify({"success": False}), 200
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
-@app.route('/review-guru/contributions', methods=['GET'])
-def get_contributions():
-    """
-        get_contributions() : get the list of contributions made by a review guru
-    """
-    try:
-        id_token = request.headers['Authorization']
-        claims = auth.verify_id_token(id_token)
-        uid = claims['uid']
-        if(claims['Review-guru'] == True):
-            query_ref = REVIEW_GURU.document(uid).collection('contributions').get()
-            return (jsonify(query_ref.to_dict()),200)
-        else:
-            return(jsonify({"response":"You are not authorised to create a review"}))
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
-@app.route('/review-guru/suggestion', methods=['POST'])
-def review_guru_suggestion():
-    """
-        review_guru_suggestion(): a review guru can create a suggestion and we can read through them.
-    """
-    now = datetime.now()
-    try:
-        data = request.json['data']
-        comment = data['Comment']
-        date = datetime.timestamp(now)
-        created_by = data['Created_by']
-        created_by_id = data['Created_by_id']
-        category = data['Categories']
-        id_token = request.headers['Authorization']
-        claims = auth.verify_id_token(id_token)
-        if claims['Review-guru'] is True:
-            suggestion_document = SUGGESTION.document(str(date)+str(created_by_id))
-            suggestion_document.set({
-                'Comment': comment,
-                'Created_by': created_by,
-                'Created_by_id': created_by_id,
-                'Categories': category,
-                'Tag': "Review_guru",
-                'Date': str(date)
-            })
-            return jsonify({"success": True}), 200
-        else:
-            return(jsonify({"response":"We would love your suggestion but you need to create an account first"}))
-    except Exception as e:
-        return f"An Error Occured: {e}"
-
 
 """------------------------------------------------
 ENTERPRISE ROUTES (AVAILABLE TO ENTPERISE CUSTOMERS)
@@ -386,6 +208,7 @@ def create_product():
             Date = datetime.timestamp(now)
             Product_id = str(Date)+ uid
             Product_name = data['Product_name']
+            Competitor_flag = data['Competitor_flag']
             Amazon_link = data['amazon_link']
             product_document = PRODUCT.document(Product_id)
             product_document.set({
@@ -394,16 +217,18 @@ def create_product():
                 'Company_id' : Company_id,
                 'Product_entry_date': Date,
                 'Product_id': Product_id,
+                #this is the path on google firestore Storage for images
                 'Product_images_path': "enterpise/"+str(Product_id)+"/",
                 'Product_name': Product_name,
                 'Amazon_link': Amazon_link,
                 'processed': False,
                 'assigned' : False,
+                'competitor_product': Competitor_flag,
                 'review_guru_analytics': False
             })
             return jsonify({"success": True}), 200
         else:
-            return (jsonify({"response":"You are not authorized to view this page"}), 404)
+            return (jsonify("You are not authorized to view this page"), 404)
     except Exception as e:
         return f"An Error Occured: {e}"
 
