@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>Implemention API</code></h1>
-<p>Last Updated: 6/5/2021</p>
+<p>Last Updated: 6/6/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -118,7 +118,7 @@ def make_enterprise_suggestion():
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
-@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;])
+@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
 def ask_ai_question(id):
     &#34;&#34;&#34;
          ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
@@ -131,10 +131,10 @@ def ask_ai_question(id):
         data = request.json[&#39;data&#39;]
         question = data[&#39;question&#39;]
         date = datetime.timestamp(now)
-        if claims[&#39;Enterpise&#39;] is True:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id)
             todo_dict = todo.get().to_dict()
-            if todo[&#39;company_id&#39;] == uid:
+            if todo_dict[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
@@ -146,11 +146,12 @@ def ask_ai_question(id):
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
+                answer_response = response[&#39;answers&#39;]
                 todo.set({
-                    str(question): str(response[&#39;answers&#39;]),
+                    str(question): str(answer_response),
                 }, merge=True)
 
-                return jsonify(str(response[&#39;answers&#39;])), 200
+                return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
             else:
                 return (&#34;You are not authorized to view this page&#34;), 403
         else:
@@ -315,7 +316,7 @@ def request_review_guru():
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;])
+<pre><code class="python">@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
 def ask_ai_question(id):
     &#34;&#34;&#34;
          ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
@@ -328,10 +329,10 @@ def ask_ai_question(id):
         data = request.json[&#39;data&#39;]
         question = data[&#39;question&#39;]
         date = datetime.timestamp(now)
-        if claims[&#39;Enterpise&#39;] is True:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id)
             todo_dict = todo.get().to_dict()
-            if todo[&#39;company_id&#39;] == uid:
+            if todo_dict[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
@@ -343,11 +344,12 @@ def ask_ai_question(id):
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
+                answer_response = response[&#39;answers&#39;]
                 todo.set({
-                    str(question): str(response[&#39;answers&#39;]),
+                    str(question): str(answer_response),
                 }, merge=True)
 
-                return jsonify(str(response[&#39;answers&#39;])), 200
+                return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
             else:
                 return (&#34;You are not authorized to view this page&#34;), 403
         else:

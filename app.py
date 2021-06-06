@@ -89,7 +89,7 @@ def make_enterprise_suggestion():
     except Exception as e:
         return f"An Error Occured: {e}"
 
-@app.route('/enterprise/product=<id>/question', methods = ['POST'])
+@app.route('/enterprise/product=<id>/question', methods = ['POST', 'GET'])
 def ask_ai_question(id):
     """
          ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
@@ -102,10 +102,10 @@ def ask_ai_question(id):
         data = request.json['data']
         question = data['question']
         date = datetime.timestamp(now)
-        if claims['Enterpise'] is True:
+        if claims['Enterprise'] is True:
             todo = GPT3QA.document(id)
             todo_dict = todo.get().to_dict()
-            if todo['company_id'] == uid:
+            if todo_dict['company_id'] == uid:
                 response = openai.Answer.create(
                     search_model="ada",
                     model="curie",
@@ -117,11 +117,12 @@ def ask_ai_question(id):
                     max_tokens=40,
                     stop=["\n", "<|endoftext|>"],
                 )
+                answer_response = response['answers']
                 todo.set({
-                    str(question): str(response['answers']),
+                    str(question): str(answer_response),
                 }, merge=True)
 
-                return jsonify(str(response['answers'])), 200
+                return (jsonify({"AI Answer":answer_response}), 200)
             else:
                 return ("You are not authorized to view this page"), 403
         else:
