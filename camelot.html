@@ -77,8 +77,6 @@ def create_company():
         data = request.json[&#39;data&#39;]
         Company_name = &#39;C-&#39;+data[&#39;company_name&#39;]
         Date = datetime.timestamp(now)
-        Category = data[&#39;category&#39;]
-        Address = data[&#39;address&#39;]
         Phone_number = data[&#39;phone_number&#39;]
         password = data[&#39;password&#39;]
         Email = data[&#39;email&#39;]
@@ -96,13 +94,10 @@ def create_company():
             company_document.set({
                 &#39;company_name&#39; : Company_name,
                 &#39;company_id&#39; : user.uid,
-                &#39;address&#39; : Address,
                 &#39;phone_number&#39; : Phone_number,
                 &#39;email&#39; : Email,
                 &#39;person_of_contact_first&#39; : Person_of_contact_first,
                 &#39;person_of_contact_last&#39; : Person_of_contact_last,
-                &#39;company_website&#39; : Company_website,
-                &#39;category&#39; : Category,
                 &#39;date&#39; : Date,
                 &#39;company_logo&#39;: Company_logo,
                 &#39;outreach_type&#39;: Outreach_type,
@@ -335,7 +330,7 @@ def get_amazon_deal_of_the_day():
     try:
         today_date = datetime.datetime.now().date()
         query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
-        return jsonify({&#34;BASIC_ANALYTICS&#34;: query_ref.to_dict()}), 200
+        return jsonify({&#34;deal_of_day&#34;: query_ref.to_dict()}), 200
     except Exception as e:
         return f&#34;An error Occured: {e}&#34;
 
@@ -458,8 +453,6 @@ def create_company():
         data = request.json[&#39;data&#39;]
         Company_name = &#39;C-&#39;+data[&#39;company_name&#39;]
         Date = datetime.timestamp(now)
-        Category = data[&#39;category&#39;]
-        Address = data[&#39;address&#39;]
         Phone_number = data[&#39;phone_number&#39;]
         password = data[&#39;password&#39;]
         Email = data[&#39;email&#39;]
@@ -477,13 +470,10 @@ def create_company():
             company_document.set({
                 &#39;company_name&#39; : Company_name,
                 &#39;company_id&#39; : user.uid,
-                &#39;address&#39; : Address,
                 &#39;phone_number&#39; : Phone_number,
                 &#39;email&#39; : Email,
                 &#39;person_of_contact_first&#39; : Person_of_contact_first,
                 &#39;person_of_contact_last&#39; : Person_of_contact_last,
-                &#39;company_website&#39; : Company_website,
-                &#39;category&#39; : Category,
                 &#39;date&#39; : Date,
                 &#39;company_logo&#39;: Company_logo,
                 &#39;outreach_type&#39;: Outreach_type,
@@ -612,7 +602,7 @@ def get_amazon_deal_of_the_day():
     try:
         today_date = datetime.datetime.now().date()
         query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
-        return jsonify({&#34;BASIC_ANALYTICS&#34;: query_ref.to_dict()}), 200
+        return jsonify({&#34;deal_of_day&#34;: query_ref.to_dict()}), 200
     except Exception as e:
         return f&#34;An error Occured: {e}&#34;</code></pre>
 </details>
