@@ -20,22 +20,52 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>Implemention API</code></h1>
-<p>Last Updated: 6/6/2021</p>
+<p>Last Updated: 6/12/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import os
+<pre><code class="python"># Required imports
+# this container will be pushed onto the BETA launch.
+# THIS WILL BE OPTIMIZED AFTER THE LAUNCH, AND THERE WILL BE MORE DOCUMENTATION.
+
+import os
 from flask_cors import CORS, cross_origin
 import openai
 from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 import uuid
 from firebase_admin import credentials, firestore, initialize_app, auth
+
+# Initialize Flask app
 app = Flask(__name__)
-#
+CORS(app)
+# Initialize Firestore DB
+cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5da7b.json&#39;)
+openai.api_key = (&#34;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&#34;)
+default_app = initialize_app(cred)
+db = firestore.client()
+# SCRAPPER = db.collection(&#39;Scrapped&#39;)
+REVIEW_POST = db.collection(&#39;Posts&#39;)
+USERS = db.collection(&#39;Users&#39;)
+PRODUCT = db.collection(&#39;Product&#39;)
+COMPANY = db.collection(&#39;Companies&#39;)
+GPT3QA = db.collection(&#39;GPT3-QA&#39;)
+SUGGESTION = db.collection(&#39;Petitions&#39;)
+# REVIEW_GURU = db.collection(&#39;Review-gurus&#39;)
+# WAITLIST = db.collection(&#39;Waitlisted-reviews&#39;)
+BASIC_ANALYTICS = db.collection(&#39;Basic_analytics&#39;)
+ADVANCED_ANALYTICS = db.collection(&#39;Advanced_analytics&#39;)
+
+@app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
+def enterprise():
+    &#34;&#34;&#34;
+        Home(): The Home Page For The Pondr enterprise Kubernetes Path.
+    &#34;&#34;&#34;
+    return &#34;&lt;h1&gt; Pondr BETA &lt;/h1&gt;&#34;
+
 
 @app.route(&#39;/auth/enterprise&#39;, methods=[&#39;POST&#39;, &#39;GET&#39;])
 def create_company():
@@ -85,13 +115,10 @@ def create_company():
         return f&#34;An Error Occured: {e}&#34;
 
 
-&#34;&#34;&#34;------------------------------------------------
-ENTERPRISE ROUTES (AVAILABLE TO ENTPERISE CUSTOMERS)
-------------------------------------------------&#34;&#34;&#34;
 @app.route(&#39;/enterprise/suggestion&#39;, methods=[&#39;POST&#39;])
 def make_enterprise_suggestion():
     &#34;&#34;&#34;
-        make_enterprise_suggestion(): a enterpise can create a suggestion and we can read through them.
+        make_enterprise_suggestion(): a enterprise can create a suggestion and we can read through them.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -114,7 +141,7 @@ def make_enterprise_suggestion():
             })
             return jsonify({&#34;success&#34;: True}), 200
         else:
-            return(jsonify({&#34;response&#34;:&#34;We would love your suggestion but you need to create an account first&#34;}), 404)
+            return(jsonify(&#34;We would love your suggestion but you need to create an account first&#34;), 404)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -146,9 +173,9 @@ def ask_ai_question(id):
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
-                answer_response = response[&#39;answers&#39;]
+                answer_response = str(response[&#39;answers&#39;])
                 todo.set({
-                    str(question): str(answer_response),
+                    str(question): answer_response,
                 }, merge=True)
 
                 return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
@@ -168,16 +195,17 @@ def get_gpt3_data(id):
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
-        if claims[&#39;Enterpise&#39;] is True:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 return (jsonify(todo),200)
             else:
-                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+                return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
+
 
 
 @app.route(&#39;/enterprise/products&#39;, methods=[&#39;GET&#39;])
@@ -194,7 +222,7 @@ def get_products_by_company():
             documents = [doc.to_dict() for doc in query_ref.stream()]
             return (jsonify({&#34;company_products&#34;:documents}),200)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -215,7 +243,7 @@ def get_advanced_analytics(id):
             else:
                 return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this specific enterpise analytics page.&#34;}), 404)
+            return (jsonify(&#34;You are not authorized to view this specific enterprise analytics page.&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -248,7 +276,7 @@ def create_product():
                 &#39;Product_entry_date&#39;: Date,
                 &#39;Product_id&#39;: Product_id,
                 #this is the path on google firestore Storage for images
-                &#39;Product_images_path&#39;: &#34;enterpise/&#34;+str(Product_id)+&#34;/&#34;,
+                &#39;Product_images_path&#39;: &#34;enterprise/&#34;+str(Product_id)+&#34;/&#34;,
                 &#39;Product_name&#39;: Product_name,
                 &#39;Amazon_link&#39;: Amazon_link,
                 &#39;processed&#39;: False,
@@ -297,7 +325,60 @@ def request_review_guru():
             return ({&#34;success&#34;: False}), 404
 
     except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;</code></pre>
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/product/dealoftheday&#39;, methods=[&#39;GET&#39;])
+def get_amazon_deal_of_the_day():
+    &#34;&#34;&#34;
+        get_amazon_deal_of_the_day(): get basic analytics of product of the day.
+    &#34;&#34;&#34;
+    try:
+        today_date = datetime.datetime.now().date()
+        query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
+        return jsonify({&#34;BASIC_ANALYTICS&#34;: query_ref.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/product=&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_basic_analytics(id):
+    &#34;&#34;&#34;
+        get_basic_analytics(id): get basic analytics of a certain product by their ID.
+    &#34;&#34;&#34;
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({&#34;BASIC_ANALYTICS: &#34;: todo2.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/categories/&lt;cat&gt;/product=&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_basic_analytics_by_category(id):
+    &#34;&#34;&#34;
+        get_basic_analytics_by_category(id): get basic analytics by category.
+    &#34;&#34;&#34;
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({&#34;BASIC_ANALYTICS: &#34;: todo2.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/categories/&lt;cat&gt;&#39;, methods=[&#39;GET&#39;])
+def get_products_by_category(cat):
+    &#34;&#34;&#34;
+        get_product_by_category(cat) : get products by their category.
+    &#34;&#34;&#34;
+    try:
+        query_ref = PRODUCT.where(u&#39;Category&#39;, u&#39;==&#39;, cat)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;category_documents&#34;:documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
+
+
+if __name__ == &#39;__main__&#39;:
+    app.run(host=&#39;0.0.0.0&#39;, port=int(os.environ.get(&#39;PORT&#39;, 5000)), debug=True)</code></pre>
 </details>
 </section>
 <section>
@@ -344,9 +425,9 @@ def ask_ai_question(id):
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
-                answer_response = response[&#39;answers&#39;]
+                answer_response = str(response[&#39;answers&#39;])
                 todo.set({
-                    str(question): str(answer_response),
+                    str(question): answer_response,
                 }, merge=True)
 
                 return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
@@ -452,7 +533,7 @@ def create_product():
                 &#39;Product_entry_date&#39;: Date,
                 &#39;Product_id&#39;: Product_id,
                 #this is the path on google firestore Storage for images
-                &#39;Product_images_path&#39;: &#34;enterpise/&#34;+str(Product_id)+&#34;/&#34;,
+                &#39;Product_images_path&#39;: &#34;enterprise/&#34;+str(Product_id)+&#34;/&#34;,
                 &#39;Product_name&#39;: Product_name,
                 &#39;Amazon_link&#39;: Amazon_link,
                 &#39;processed&#39;: False,
@@ -465,6 +546,23 @@ def create_product():
             return (jsonify(&#34;You are not authorized to view this page&#34;), 404)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.enterprise"><code class="name flex">
+<span>def <span class="ident">enterprise</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Home(): The Home Page For The Pondr enterprise Kubernetes Path.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
+def enterprise():
+    &#34;&#34;&#34;
+        Home(): The Home Page For The Pondr enterprise Kubernetes Path.
+    &#34;&#34;&#34;
+    return &#34;&lt;h1&gt; Pondr BETA &lt;/h1&gt;&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.get_advanced_analytics"><code class="name flex">
@@ -492,9 +590,75 @@ def get_advanced_analytics(id):
             else:
                 return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this specific enterpise analytics page.&#34;}), 404)
+            return (jsonify(&#34;You are not authorized to view this specific enterprise analytics page.&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_amazon_deal_of_the_day"><code class="name flex">
+<span>def <span class="ident">get_amazon_deal_of_the_day</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_amazon_deal_of_the_day(): get basic analytics of product of the day.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/product/dealoftheday&#39;, methods=[&#39;GET&#39;])
+def get_amazon_deal_of_the_day():
+    &#34;&#34;&#34;
+        get_amazon_deal_of_the_day(): get basic analytics of product of the day.
+    &#34;&#34;&#34;
+    try:
+        today_date = datetime.datetime.now().date()
+        query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
+        return jsonify({&#34;BASIC_ANALYTICS&#34;: query_ref.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_basic_analytics"><code class="name flex">
+<span>def <span class="ident">get_basic_analytics</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_basic_analytics(id): get basic analytics of a certain product by their ID.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/product=&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_basic_analytics(id):
+    &#34;&#34;&#34;
+        get_basic_analytics(id): get basic analytics of a certain product by their ID.
+    &#34;&#34;&#34;
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({&#34;BASIC_ANALYTICS: &#34;: todo2.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_basic_analytics_by_category"><code class="name flex">
+<span>def <span class="ident">get_basic_analytics_by_category</span></span>(<span>id)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_basic_analytics_by_category(id): get basic analytics by category.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/categories/&lt;cat&gt;/product=&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+def get_basic_analytics_by_category(id):
+    &#34;&#34;&#34;
+        get_basic_analytics_by_category(id): get basic analytics by category.
+    &#34;&#34;&#34;
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({&#34;BASIC_ANALYTICS: &#34;: todo2.to_dict()}), 200
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.get_gpt3_data"><code class="name flex">
@@ -515,16 +679,38 @@ def get_gpt3_data(id):
         id_token = request.headers[&#39;Authorization&#39;]
         claims = auth.verify_id_token(id_token)
         uid = claims[&#39;uid&#39;]
-        if claims[&#39;Enterpise&#39;] is True:
+        if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
                 return (jsonify(todo),200)
             else:
-                return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+                return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_products_by_category"><code class="name flex">
+<span>def <span class="ident">get_products_by_category</span></span>(<span>cat)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_product_by_category(cat) : get products by their category.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/categories/&lt;cat&gt;&#39;, methods=[&#39;GET&#39;])
+def get_products_by_category(cat):
+    &#34;&#34;&#34;
+        get_product_by_category(cat) : get products by their category.
+    &#34;&#34;&#34;
+    try:
+        query_ref = PRODUCT.where(u&#39;Category&#39;, u&#39;==&#39;, cat)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({&#34;category_documents&#34;:documents}),200)
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.get_products_by_company"><code class="name flex">
@@ -550,7 +736,7 @@ def get_products_by_company():
             documents = [doc.to_dict() for doc in query_ref.stream()]
             return (jsonify({&#34;company_products&#34;:documents}),200)
         else:
-            return (jsonify({&#34;response&#34;:&#34;You are not authorized to view this page&#34;}), 403)
+            return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
@@ -559,7 +745,7 @@ def get_products_by_company():
 <span>def <span class="ident">make_enterprise_suggestion</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>make_enterprise_suggestion(): a enterpise can create a suggestion and we can read through them.</p></div>
+<div class="desc"><p>make_enterprise_suggestion(): a enterprise can create a suggestion and we can read through them.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -567,7 +753,7 @@ def get_products_by_company():
 <pre><code class="python">@app.route(&#39;/enterprise/suggestion&#39;, methods=[&#39;POST&#39;])
 def make_enterprise_suggestion():
     &#34;&#34;&#34;
-        make_enterprise_suggestion(): a enterpise can create a suggestion and we can read through them.
+        make_enterprise_suggestion(): a enterprise can create a suggestion and we can read through them.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -590,7 +776,7 @@ def make_enterprise_suggestion():
             })
             return jsonify({&#34;success&#34;: True}), 200
         else:
-            return(jsonify({&#34;response&#34;:&#34;We would love your suggestion but you need to create an account first&#34;}), 404)
+            return(jsonify(&#34;We would love your suggestion but you need to create an account first&#34;), 404)
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
@@ -658,8 +844,13 @@ def request_review_guru():
 <li><code><a title="app.ask_ai_question" href="#app.ask_ai_question">ask_ai_question</a></code></li>
 <li><code><a title="app.create_company" href="#app.create_company">create_company</a></code></li>
 <li><code><a title="app.create_product" href="#app.create_product">create_product</a></code></li>
+<li><code><a title="app.enterprise" href="#app.enterprise">enterprise</a></code></li>
 <li><code><a title="app.get_advanced_analytics" href="#app.get_advanced_analytics">get_advanced_analytics</a></code></li>
+<li><code><a title="app.get_amazon_deal_of_the_day" href="#app.get_amazon_deal_of_the_day">get_amazon_deal_of_the_day</a></code></li>
+<li><code><a title="app.get_basic_analytics" href="#app.get_basic_analytics">get_basic_analytics</a></code></li>
+<li><code><a title="app.get_basic_analytics_by_category" href="#app.get_basic_analytics_by_category">get_basic_analytics_by_category</a></code></li>
 <li><code><a title="app.get_gpt3_data" href="#app.get_gpt3_data">get_gpt3_data</a></code></li>
+<li><code><a title="app.get_products_by_category" href="#app.get_products_by_category">get_products_by_category</a></code></li>
 <li><code><a title="app.get_products_by_company" href="#app.get_products_by_company">get_products_by_company</a></code></li>
 <li><code><a title="app.make_enterprise_suggestion" href="#app.make_enterprise_suggestion">make_enterprise_suggestion</a></code></li>
 <li><code><a title="app.request_review_guru" href="#app.request_review_guru">request_review_guru</a></code></li>
