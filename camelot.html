@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>Implemention API</code></h1>
-<p>Last Updated: 6/12/2021</p>
+<p>Last Updated: 6/13/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -82,7 +82,6 @@ def create_company():
         Email = data[&#39;email&#39;]
         Person_of_contact_first = data[&#39;first_name&#39;]
         Person_of_contact_last = data[&#39;last_name&#39;]
-        Company_website = data[&#39;company_website&#39;]
         Outreach_type = data[&#39;outreach_type&#39;]
         Company_logo = data[&#39;company_logo&#39;]
         beta_key = data[&#39;beta_key&#39;]
@@ -239,6 +238,45 @@ def get_advanced_analytics(id):
                 return (jsonify({&#34;Access Denied&#34;}), 403)
         else:
             return (jsonify(&#34;You are not authorized to view this specific enterprise analytics page.&#34;), 403)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+
+@app.route(&#39;/demo&#39;, methods = [&#39;GET&#39;])
+def get_demo_analytics():
+    &#34;&#34;&#34;
+         get_demo_analytics(): this will be a demo product, to show on main site.
+    &#34;&#34;&#34;
+    try:
+        id = &#34;1622679592.92769629oxyH0nhRZO141bNYz327SBxsJ3&#34;
+        todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
+        return jsonify(todo), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;
+        
+@app.route(&#39;/demo/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
+def demo_ai_question():
+    &#34;&#34;&#34;
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        data = request.json[&#39;data&#39;]
+        question = data[&#39;question&#39;]
+        response = openai.Answer.create(
+            search_model=&#34;ada&#34;,
+            model=&#34;curie&#34;,
+            question=str(question),
+            file=&#34;file-ua1GevFXqOgWY5iXfSmuVMwW&#34;,
+            examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
+            examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
+                        [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+            max_tokens=40,
+            stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
+        )
+        answer_response = str(response[&#39;answers&#39;])
+
+        return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
+
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
@@ -458,7 +496,6 @@ def create_company():
         Email = data[&#39;email&#39;]
         Person_of_contact_first = data[&#39;first_name&#39;]
         Person_of_contact_last = data[&#39;last_name&#39;]
-        Company_website = data[&#39;company_website&#39;]
         Outreach_type = data[&#39;outreach_type&#39;]
         Company_logo = data[&#39;company_logo&#39;]
         beta_key = data[&#39;beta_key&#39;]
@@ -534,6 +571,43 @@ def create_product():
             return jsonify({&#34;success&#34;: True}), 200
         else:
             return (jsonify(&#34;You are not authorized to view this page&#34;), 404)
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.demo_ai_question"><code class="name flex">
+<span>def <span class="ident">demo_ai_question</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/demo/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
+def demo_ai_question():
+    &#34;&#34;&#34;
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+    &#34;&#34;&#34;
+    now = datetime.now()
+    try:
+        data = request.json[&#39;data&#39;]
+        question = data[&#39;question&#39;]
+        response = openai.Answer.create(
+            search_model=&#34;ada&#34;,
+            model=&#34;curie&#34;,
+            question=str(question),
+            file=&#34;file-ua1GevFXqOgWY5iXfSmuVMwW&#34;,
+            examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
+            examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
+                        [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+            max_tokens=40,
+            stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
+        )
+        answer_response = str(response[&#39;answers&#39;])
+
+        return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
+
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
@@ -649,6 +723,28 @@ def get_basic_analytics_by_category(id):
         return jsonify({&#34;BASIC_ANALYTICS: &#34;: todo2.to_dict()}), 200
     except Exception as e:
         return f&#34;An error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.get_demo_analytics"><code class="name flex">
+<span>def <span class="ident">get_demo_analytics</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>get_demo_analytics(): this will be a demo product, to show on main site.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/demo&#39;, methods = [&#39;GET&#39;])
+def get_demo_analytics():
+    &#34;&#34;&#34;
+         get_demo_analytics(): this will be a demo product, to show on main site.
+    &#34;&#34;&#34;
+    try:
+        id = &#34;1622679592.92769629oxyH0nhRZO141bNYz327SBxsJ3&#34;
+        todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
+        return jsonify(todo), 200
+    except Exception as e:
+        return f&#34;An Error Occured: {e}&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.get_gpt3_data"><code class="name flex">
@@ -834,11 +930,13 @@ def request_review_guru():
 <li><code><a title="app.ask_ai_question" href="#app.ask_ai_question">ask_ai_question</a></code></li>
 <li><code><a title="app.create_company" href="#app.create_company">create_company</a></code></li>
 <li><code><a title="app.create_product" href="#app.create_product">create_product</a></code></li>
+<li><code><a title="app.demo_ai_question" href="#app.demo_ai_question">demo_ai_question</a></code></li>
 <li><code><a title="app.enterprise" href="#app.enterprise">enterprise</a></code></li>
 <li><code><a title="app.get_advanced_analytics" href="#app.get_advanced_analytics">get_advanced_analytics</a></code></li>
 <li><code><a title="app.get_amazon_deal_of_the_day" href="#app.get_amazon_deal_of_the_day">get_amazon_deal_of_the_day</a></code></li>
 <li><code><a title="app.get_basic_analytics" href="#app.get_basic_analytics">get_basic_analytics</a></code></li>
 <li><code><a title="app.get_basic_analytics_by_category" href="#app.get_basic_analytics_by_category">get_basic_analytics_by_category</a></code></li>
+<li><code><a title="app.get_demo_analytics" href="#app.get_demo_analytics">get_demo_analytics</a></code></li>
 <li><code><a title="app.get_gpt3_data" href="#app.get_gpt3_data">get_gpt3_data</a></code></li>
 <li><code><a title="app.get_products_by_category" href="#app.get_products_by_category">get_products_by_category</a></code></li>
 <li><code><a title="app.get_products_by_company" href="#app.get_products_by_company">get_products_by_company</a></code></li>
