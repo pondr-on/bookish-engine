@@ -6,7 +6,17 @@ from datetime import datetime
 import uuid
 from firebase_admin import credentials, firestore, initialize_app, auth
 app = Flask(__name__)
-#
+#import os
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/', methods=['GET'])
+def enterprise():
+    """
+        Home(): The Home Page For The Pondr enterprise Kubernetes Path.
+    """
+    return "<h1> Pondr BETA </h1>"
+
 
 @app.route('/auth/enterprise', methods=['POST', 'GET'])
 def create_company():
@@ -18,14 +28,11 @@ def create_company():
         data = request.json['data']
         Company_name = 'C-'+data['company_name']
         Date = datetime.timestamp(now)
-        Category = data['category']
-        Address = data['address']
         Phone_number = data['phone_number']
         password = data['password']
         Email = data['email']
         Person_of_contact_first = data['first_name']
         Person_of_contact_last = data['last_name']
-        Company_website = data['company_website']
         Outreach_type = data['outreach_type']
         Company_logo = data['company_logo']
         beta_key = data['beta_key']
@@ -37,13 +44,10 @@ def create_company():
             company_document.set({
                 'company_name' : Company_name,
                 'company_id' : user.uid,
-                'address' : Address,
                 'phone_number' : Phone_number,
                 'email' : Email,
                 'person_of_contact_first' : Person_of_contact_first,
                 'person_of_contact_last' : Person_of_contact_last,
-                'company_website' : Company_website,
-                'category' : Category,
                 'date' : Date,
                 'company_logo': Company_logo,
                 'outreach_type': Outreach_type,
@@ -56,13 +60,10 @@ def create_company():
         return f"An Error Occured: {e}"
 
 
-"""------------------------------------------------
-ENTERPRISE ROUTES (AVAILABLE TO ENTPERISE CUSTOMERS)
-------------------------------------------------"""
 @app.route('/enterprise/suggestion', methods=['POST'])
 def make_enterprise_suggestion():
     """
-        make_enterprise_suggestion(): a enterpise can create a suggestion and we can read through them.
+        make_enterprise_suggestion(): a enterprise can create a suggestion and we can read through them.
     """
     now = datetime.now()
     try:
@@ -85,14 +86,14 @@ def make_enterprise_suggestion():
             })
             return jsonify({"success": True}), 200
         else:
-            return(jsonify({"response":"We would love your suggestion but you need to create an account first"}), 404)
+            return(jsonify("We would love your suggestion but you need to create an account first"), 404)
     except Exception as e:
         return f"An Error Occured: {e}"
 
 @app.route('/enterprise/product=<id>/question', methods = ['POST', 'GET'])
 def ask_ai_question(id):
     """
-         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product and get review sample data.
     """
     now = datetime.now()
     try:
@@ -107,22 +108,30 @@ def ask_ai_question(id):
             todo_dict = todo.get().to_dict()
             if todo_dict['company_id'] == uid:
                 response = openai.Answer.create(
+                    n=3,
+                    temperature=0.35,
                     search_model="ada",
                     model="curie",
                     question=str(question),
-                    file=todo_dict['gpt3_form_id'],
+                    file=upload['id'],
                     examples_context="In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest",
                     examples=[["What is human life expectancy in the United States?", "78 years."],
-                                ["what is the population of Seattle?", "Seattle's population is 724,305"]],
+                            ["what is the population of Seattle?", "Seattle's population is 724,305"]],
                     max_tokens=40,
                     stop=["\n", "<|endoftext|>"],
                 )
-                answer_response = response['answers']
-                todo.set({
-                    str(question): str(answer_response),
+                document_list = response['selected_documents']
+                df = pd.DataFrame(data=document_list)
+                text_list = df.nlargest(3, 'score')['text'].tolist()
+
+                answer_response = str(response['answers'])
+                todo.collection('responses').document(date).set({
+                    str(question): answer_response,
+                    "reviews": text_list,
+                    "response_id":date 
                 }, merge=True)
 
-                return (jsonify({"AI Answer":answer_response}), 200)
+                return (jsonify({"AI Answer":answer_response, "Reviews": text_list}), 200)
             else:
                 return ("You are not authorized to view this page"), 403
         else:
@@ -133,22 +142,25 @@ def ask_ai_question(id):
 @app.route("/enterprise/product=<id>/ai", methods=['GET'])
 def get_gpt3_data(id):
     """
-         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers
+         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers and their review samples
     """
     try:
         id_token = request.headers['Authorization']
         claims = auth.verify_id_token(id_token)
         uid = claims['uid']
-        if claims['Enterpise'] is True:
+        if claims['Enterprise'] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo['company_id'] == uid:
-                return (jsonify(todo),200)
+                query_ref = GPT3QA.document(id).collection('responses')
+                documents = [doc.to_dict() for doc in query_ref.strem()]
+                return (jsonify({"responses":documents}),200)
             else:
-                return (jsonify({"response":"You are not authorized to view this page"}), 403)
+                return (jsonify("You are not authorized to view this page"), 403)
         else:
-            return (jsonify({"response":"You are not authorized to view this page"}), 403)
+            return (jsonify("You are not authorized to view this page"), 403)
     except Exception as e:
         return f"An Error Occured: {e}"
+
 
 
 @app.route('/enterprise/products', methods=['GET'])
@@ -165,7 +177,7 @@ def get_products_by_company():
             documents = [doc.to_dict() for doc in query_ref.stream()]
             return (jsonify({"company_products":documents}),200)
         else:
-            return (jsonify({"response":"You are not authorized to view this page"}), 403)
+            return (jsonify("You are not authorized to view this page"), 403)
     except Exception as e:
         return f"An Error Occured: {e}"
 
@@ -186,7 +198,46 @@ def get_advanced_analytics(id):
             else:
                 return (jsonify({"Access Denied"}), 403)
         else:
-            return (jsonify({"response":"You are not authorized to view this specific enterpise analytics page."}), 404)
+            return (jsonify("You are not authorized to view this specific enterprise analytics page."), 403)
+    except Exception as e:
+        return f"An Error Occured: {e}"
+
+@app.route('/demo', methods = ['GET'])
+def get_demo_analytics():
+    """
+         get_demo_analytics(): this will be a demo product, to show on main site.
+    """
+    try:
+        id = "1622679592.92769629oxyH0nhRZO141bNYz327SBxsJ3"
+        todo = ADVANCED_ANALYTICS.document(id).get().to_dict()
+        return jsonify(todo), 200
+    except Exception as e:
+        return f"An Error Occured: {e}"
+        
+@app.route('/demo/question', methods = ['POST', 'GET'])
+def demo_ai_question():
+    """
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+    """
+    now = datetime.now()
+    try:
+        data = request.json['data']
+        question = data['question']
+        response = openai.Answer.create(
+            search_model="ada",
+            model="curie",
+            question=str(question),
+            file="file-ua1GevFXqOgWY5iXfSmuVMwW",
+            examples_context="In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest",
+            examples=[["What is human life expectancy in the United States?", "78 years."],
+                        ["what is the population of Seattle?", "Seattle's population is 724,305"]],
+            max_tokens=40,
+            stop=["\n", "<|endoftext|>"],
+        )
+        answer_response = str(response['answers'])
+
+        return (jsonify({"AI Answer":answer_response}), 200)
+
     except Exception as e:
         return f"An Error Occured: {e}"
 
@@ -219,7 +270,7 @@ def create_product():
                 'Product_entry_date': Date,
                 'Product_id': Product_id,
                 #this is the path on google firestore Storage for images
-                'Product_images_path': "enterpise/"+str(Product_id)+"/",
+                'Product_images_path': "enterprise/"+str(Product_id)+"/",
                 'Product_name': Product_name,
                 'Amazon_link': Amazon_link,
                 'processed': False,
@@ -269,3 +320,52 @@ def request_review_guru():
 
     except Exception as e:
         return f"An Error Occured: {e}"
+
+@app.route('/product/dealoftheday', methods=['GET'])
+def get_amazon_deal_of_the_day():
+    """
+        get_amazon_deal_of_the_day(): get basic analytics of product of the day.
+    """
+    try:
+        today_date = datetime.datetime.now().date()
+        query_ref = PRODUCT.where(u'AmazonDealOfDay', u'==', today_date)
+        return jsonify({"deal_of_day": query_ref.to_dict()}), 200
+    except Exception as e:
+        return f"An error Occured: {e}"
+
+@app.route('/product=<id>', methods=['GET'])
+def get_basic_analytics(id):
+    """
+        get_basic_analytics(id): get basic analytics of a certain product by their ID.
+    """
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({"BASIC_ANALYTICS: ": todo2.to_dict()}), 200
+    except Exception as e:
+        return f"An error Occured: {e}"
+
+@app.route('/categories/<cat>/product=<id>', methods=['GET'])
+def get_basic_analytics_by_category(id):
+    """
+        get_basic_analytics_by_category(id): get basic analytics by category.
+    """
+    try:
+        # todo = PRODUCT.document(id).get()
+        todo2 = BASIC_ANALYTICS.document(id).get()
+        return jsonify({"BASIC_ANALYTICS: ": todo2.to_dict()}), 200
+    except Exception as e:
+        return f"An error Occured: {e}"
+
+@app.route('/categories/<cat>', methods=['GET'])
+def get_products_by_category(cat):
+    """
+        get_product_by_category(cat) : get products by their category.
+    """
+    try:
+        query_ref = PRODUCT.where(u'Category', u'==', cat)
+        documents = [doc.to_dict() for doc in query_ref.stream()]
+        return (jsonify({"category_documents":documents}),200)
+    except Exception as e:
+        return f"An error Occured: {e}"
+

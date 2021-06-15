@@ -20,44 +20,24 @@
 <article id="content">
 <header>
 <h1 class="title">Official Pondr <code>Implemention API</code></h1>
-<p>Last Updated: 6/13/2021</p>
+<p>Last Updated: 6/15/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python"># Required imports
-# this container will be pushed onto the BETA launch.
-# THIS WILL BE OPTIMIZED AFTER THE LAUNCH, AND THERE WILL BE MORE DOCUMENTATION.
-
-import os
+<pre><code class="python">import os
 from flask_cors import CORS, cross_origin
 import openai
 from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 import uuid
 from firebase_admin import credentials, firestore, initialize_app, auth
-
-# Initialize Flask app
+app = Flask(__name__)
+#import os
 app = Flask(__name__)
 CORS(app)
-# Initialize Firestore DB
-cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5da7b.json&#39;)
-openai.api_key = (&#34;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&#34;)
-default_app = initialize_app(cred)
-db = firestore.client()
-# SCRAPPER = db.collection(&#39;Scrapped&#39;)
-REVIEW_POST = db.collection(&#39;Posts&#39;)
-USERS = db.collection(&#39;Users&#39;)
-PRODUCT = db.collection(&#39;Product&#39;)
-COMPANY = db.collection(&#39;Companies&#39;)
-GPT3QA = db.collection(&#39;GPT3-QA&#39;)
-SUGGESTION = db.collection(&#39;Petitions&#39;)
-# REVIEW_GURU = db.collection(&#39;Review-gurus&#39;)
-# WAITLIST = db.collection(&#39;Waitlisted-reviews&#39;)
-BASIC_ANALYTICS = db.collection(&#39;Basic_analytics&#39;)
-ADVANCED_ANALYTICS = db.collection(&#39;Advanced_analytics&#39;)
 
 @app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
 def enterprise():
@@ -142,7 +122,7 @@ def make_enterprise_suggestion():
 @app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
 def ask_ai_question(id):
     &#34;&#34;&#34;
-         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product and get review sample data.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -157,22 +137,30 @@ def ask_ai_question(id):
             todo_dict = todo.get().to_dict()
             if todo_dict[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
+                    n=3,
+                    temperature=0.35,
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
                     question=str(question),
-                    file=todo_dict[&#39;gpt3_form_id&#39;],
+                    file=upload[&#39;id&#39;],
                     examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
                     examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
-                                [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                            [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
+                document_list = response[&#39;selected_documents&#39;]
+                df = pd.DataFrame(data=document_list)
+                text_list = df.nlargest(3, &#39;score&#39;)[&#39;text&#39;].tolist()
+
                 answer_response = str(response[&#39;answers&#39;])
-                todo.set({
+                todo.collection(&#39;responses&#39;).document(date).set({
                     str(question): answer_response,
+                    &#34;reviews&#34;: text_list,
+                    &#34;response_id&#34;:date 
                 }, merge=True)
 
-                return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
+                return (jsonify({&#34;AI Answer&#34;:answer_response, &#34;Reviews&#34;: text_list}), 200)
             else:
                 return (&#34;You are not authorized to view this page&#34;), 403
         else:
@@ -183,7 +171,7 @@ def ask_ai_question(id):
 @app.route(&#34;/enterprise/product=&lt;id&gt;/ai&#34;, methods=[&#39;GET&#39;])
 def get_gpt3_data(id):
     &#34;&#34;&#34;
-         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers
+         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers and their review samples
     &#34;&#34;&#34;
     try:
         id_token = request.headers[&#39;Authorization&#39;]
@@ -192,7 +180,9 @@ def get_gpt3_data(id):
         if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return (jsonify(todo),200)
+                query_ref = GPT3QA.document(id).collection(&#39;responses&#39;)
+                documents = [doc.to_dict() for doc in query_ref.strem()]
+                return (jsonify({&#34;responses&#34;:documents}),200)
             else:
                 return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
         else:
@@ -406,12 +396,7 @@ def get_products_by_category(cat):
         documents = [doc.to_dict() for doc in query_ref.stream()]
         return (jsonify({&#34;category_documents&#34;:documents}),200)
     except Exception as e:
-        return f&#34;An error Occured: {e}&#34;
-
-
-
-if __name__ == &#39;__main__&#39;:
-    app.run(host=&#39;0.0.0.0&#39;, port=int(os.environ.get(&#39;PORT&#39;, 5000)), debug=True)</code></pre>
+        return f&#34;An error Occured: {e}&#34;</code></pre>
 </details>
 </section>
 <section>
@@ -425,7 +410,7 @@ if __name__ == &#39;__main__&#39;:
 <span>def <span class="ident">ask_ai_question</span></span>(<span>id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.</p></div>
+<div class="desc"><p>ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product and get review sample data.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -433,7 +418,7 @@ if __name__ == &#39;__main__&#39;:
 <pre><code class="python">@app.route(&#39;/enterprise/product=&lt;id&gt;/question&#39;, methods = [&#39;POST&#39;, &#39;GET&#39;])
 def ask_ai_question(id):
     &#34;&#34;&#34;
-         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product.
+         ask_question(id): Companies can ask questions about a product using GPT-3 on their specific product and get review sample data.
     &#34;&#34;&#34;
     now = datetime.now()
     try:
@@ -448,22 +433,30 @@ def ask_ai_question(id):
             todo_dict = todo.get().to_dict()
             if todo_dict[&#39;company_id&#39;] == uid:
                 response = openai.Answer.create(
+                    n=3,
+                    temperature=0.35,
                     search_model=&#34;ada&#34;,
                     model=&#34;curie&#34;,
                     question=str(question),
-                    file=todo_dict[&#39;gpt3_form_id&#39;],
+                    file=upload[&#39;id&#39;],
                     examples_context=&#34;In 2017, U.S. life expectancy was 78.6 years. With a 2019 population of 753,675, it is the largest city in both the state of Washington and the Pacific Northwest&#34;,
                     examples=[[&#34;What is human life expectancy in the United States?&#34;, &#34;78 years.&#34;],
-                                [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
+                            [&#34;what is the population of Seattle?&#34;, &#34;Seattle&#39;s population is 724,305&#34;]],
                     max_tokens=40,
                     stop=[&#34;\n&#34;, &#34;&lt;|endoftext|&gt;&#34;],
                 )
+                document_list = response[&#39;selected_documents&#39;]
+                df = pd.DataFrame(data=document_list)
+                text_list = df.nlargest(3, &#39;score&#39;)[&#39;text&#39;].tolist()
+
                 answer_response = str(response[&#39;answers&#39;])
-                todo.set({
+                todo.collection(&#39;responses&#39;).document(date).set({
                     str(question): answer_response,
+                    &#34;reviews&#34;: text_list,
+                    &#34;response_id&#34;:date 
                 }, merge=True)
 
-                return (jsonify({&#34;AI Answer&#34;:answer_response}), 200)
+                return (jsonify({&#34;AI Answer&#34;:answer_response, &#34;Reviews&#34;: text_list}), 200)
             else:
                 return (&#34;You are not authorized to view this page&#34;), 403
         else:
@@ -751,7 +744,7 @@ def get_demo_analytics():
 <span>def <span class="ident">get_gpt3_data</span></span>(<span>id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>get_gpt3_data(id): Companies can see GPT-3 asked questions/answers</p></div>
+<div class="desc"><p>get_gpt3_data(id): Companies can see GPT-3 asked questions/answers and their review samples</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -759,7 +752,7 @@ def get_demo_analytics():
 <pre><code class="python">@app.route(&#34;/enterprise/product=&lt;id&gt;/ai&#34;, methods=[&#39;GET&#39;])
 def get_gpt3_data(id):
     &#34;&#34;&#34;
-         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers
+         get_gpt3_data(id): Companies can see GPT-3 asked questions/answers and their review samples
     &#34;&#34;&#34;
     try:
         id_token = request.headers[&#39;Authorization&#39;]
@@ -768,7 +761,9 @@ def get_gpt3_data(id):
         if claims[&#39;Enterprise&#39;] is True:
             todo = GPT3QA.document(id).get().to_dict()
             if todo[&#39;company_id&#39;] == uid:
-                return (jsonify(todo),200)
+                query_ref = GPT3QA.document(id).collection(&#39;responses&#39;)
+                documents = [doc.to_dict() for doc in query_ref.strem()]
+                return (jsonify({&#34;responses&#34;:documents}),200)
             else:
                 return (jsonify(&#34;You are not authorized to view this page&#34;), 403)
         else:
