@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title"> GroundHog </h1><code>API</code></h1>
-<p>Last Updated: 6/12/2021</p>
+<p>Last Updated: 6/15/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -65,54 +65,54 @@ def Home():
     &#34;&#34;&#34;
     return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;
 
-@app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
-def get_waitlist():
-    &#34;&#34;&#34;
-        get_waitlist(): This will return all the items in the waitlist
-    &#34;&#34;&#34;
-    try:
-        documents = [doc.to_dict() for doc in WAITLIST.stream()]
-        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error Occured: {e}&#34;
+# @app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
+# def get_waitlist():
+#     &#34;&#34;&#34;
+#         get_waitlist(): This will return all the items in the waitlist
+#     &#34;&#34;&#34;
+#     try:
+#         documents = [doc.to_dict() for doc in WAITLIST.stream()]
+#         return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+#     except Exception as e:
+#         return f&#34;An error Occured: {e}&#34;
 
 
-@app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
-def get_scrapped():
-    &#34;&#34;&#34;
-        get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
-    &#34;&#34;&#34;
-    try:
-        documents = [doc.to_dict() for doc in SCRAPPED.stream()]
-        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error Occured: {e}&#34;
+# @app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
+# def get_scrapped():
+#     &#34;&#34;&#34;
+#         get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
+#     &#34;&#34;&#34;
+#     try:
+#         documents = [doc.to_dict() for doc in SCRAPPED.stream()]
+#         return (jsonify({&#34;Entire Collection&#34;: documents}),200)
+#     except Exception as e:
+#         return f&#34;An error Occured: {e}&#34;
 
 
-@app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
-def get_scrapped_waitlist():
-    &#34;&#34;&#34;
-        get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
-    &#34;&#34;&#34;
-    try:
-        query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
-        documents = [doc.to_dict() for doc in query_ref.stream()]
-        return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error has occured: {e}&#34;
+# @app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
+# def get_scrapped_waitlist():
+#     &#34;&#34;&#34;
+#         get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
+#     &#34;&#34;&#34;
+#     try:
+#         query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
+#         documents = [doc.to_dict() for doc in query_ref.stream()]
+#         return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
+#     except Exception as e:
+#         return f&#34;An error has occured: {e}&#34;
 
-@app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
-def update_scrapped_link(id):
-    &#34;&#34;&#34;
-        update_scrapped_link(id): This will go remove scrapped link from the waitlist but it will always be in our system.
-    &#34;&#34;&#34;
-    try:
-        doc = SCRAPPED.document(id) # doc is DocumentReference
-        field_updates = {&#34;processed&#34;: True}
-        doc.update(field_updates)
-        return jsonify({&#34;success&#34;: True}), 200
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;
+# @app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
+# def update_scrapped_link(id):
+#     &#34;&#34;&#34;
+#         update_scrapped_link(id): This will go remove scrapped link from the waitlist but it will always be in our system.
+#     &#34;&#34;&#34;
+#     try:
+#         doc = SCRAPPED.document(id) # doc is DocumentReference
+#         field_updates = {&#34;processed&#34;: True}
+#         doc.update(field_updates)
+#         return jsonify({&#34;success&#34;: True}), 200
+#     except Exception as e:
+#         return f&#34;An Error Occured: {e}&#34;
 
 # @app.route(&#39;/product/entry&#39;, methods=[&#39;POST&#39;])
 # def create_product():
@@ -145,29 +145,29 @@ def update_scrapped_link(id):
 #     except Exception as e:
 #         return f&#34;An Error Occured: {e}&#34;
 
-@app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
-def get_waitlist_by_product(id):
-    &#34;&#34;&#34;
-        get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
-    &#34;&#34;&#34;
-    try:
-        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
-        documents = [doc.to_dict() for doc in query_ref.stream()]
-        return (jsonify({str(product_id):documents}),200)
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;
+# @app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
+# def get_waitlist_by_product(id):
+#     &#34;&#34;&#34;
+#         get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
+#     &#34;&#34;&#34;
+#     try:
+#         query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
+#         documents = [doc.to_dict() for doc in query_ref.stream()]
+#         return (jsonify({str(product_id):documents}),200)
+#     except Exception as e:
+#         return f&#34;An Error Occured: {e}&#34;
 
-@app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
-def delete_product_waitlist(id):
-    &#34;&#34;&#34;
-        delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
-    &#34;&#34;&#34;
-    try:
-        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
-        documents = [doc.delete() for doc in query_ref.stream()]
-        return (jsonify({&#34;documents deleted&#34;}),200)
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;
+# @app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
+# def delete_product_waitlist(id):
+#     &#34;&#34;&#34;
+#         delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
+#     &#34;&#34;&#34;
+#     try:
+#         query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
+#         documents = [doc.delete() for doc in query_ref.stream()]
+#         return (jsonify({&#34;documents deleted&#34;}),200)
+#     except Exception as e:
+#         return f&#34;An Error Occured: {e}&#34;
 
 # not an API endpoint
 def run_gpt_qa(form_id):
@@ -217,7 +217,7 @@ def post_amazon_deal_of_day():
         
         answers = run_gpt_qa(gpt_form) #gpt-3 QA function
 
-        today_date = datetime.datetime.now().date()
+        today_date = now.date()
         product_document = PRODUCT.document(product_id)
         product_document.set({
             &#39;Category&#39; : Category,
@@ -290,7 +290,7 @@ def post_advanced_analytics():
         &#34;&#34;&#34;
         Creating a Basic Analytics document
         &#34;&#34;&#34;
-        today_date = datetime.datetime.now().date()
+        today_date = now.date()
         basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
         basic_analytics_document.set({
             &#39;product_name&#39;: product_name,
@@ -452,28 +452,6 @@ def Home():
     return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;</code></pre>
 </details>
 </dd>
-<dt id="app.delete_product_waitlist"><code class="name flex">
-<span>def <span class="ident">delete_product_waitlist</span></span>(<span>id)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
-def delete_product_waitlist(id):
-    &#34;&#34;&#34;
-        delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
-    &#34;&#34;&#34;
-    try:
-        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
-        documents = [doc.delete() for doc in query_ref.stream()]
-        return (jsonify({&#34;documents deleted&#34;}),200)
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;</code></pre>
-</details>
-</dd>
 <dt id="app.get_products"><code class="name flex">
 <span>def <span class="ident">get_products</span></span>(<span>)</span>
 </code></dt>
@@ -539,92 +517,6 @@ def get_products_waitlist_by_company():
         return f&#34;An error has Occured: {e}&#34;</code></pre>
 </details>
 </dd>
-<dt id="app.get_scrapped"><code class="name flex">
-<span>def <span class="ident">get_scrapped</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
-def get_scrapped():
-    &#34;&#34;&#34;
-        get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
-    &#34;&#34;&#34;
-    try:
-        documents = [doc.to_dict() for doc in SCRAPPED.stream()]
-        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error Occured: {e}&#34;</code></pre>
-</details>
-</dd>
-<dt id="app.get_scrapped_waitlist"><code class="name flex">
-<span>def <span class="ident">get_scrapped_waitlist</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
-def get_scrapped_waitlist():
-    &#34;&#34;&#34;
-        get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
-    &#34;&#34;&#34;
-    try:
-        query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
-        documents = [doc.to_dict() for doc in query_ref.stream()]
-        return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error has occured: {e}&#34;</code></pre>
-</details>
-</dd>
-<dt id="app.get_waitlist"><code class="name flex">
-<span>def <span class="ident">get_waitlist</span></span>(<span>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>get_waitlist(): This will return all the items in the waitlist</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
-def get_waitlist():
-    &#34;&#34;&#34;
-        get_waitlist(): This will return all the items in the waitlist
-    &#34;&#34;&#34;
-    try:
-        documents = [doc.to_dict() for doc in WAITLIST.stream()]
-        return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-    except Exception as e:
-        return f&#34;An error Occured: {e}&#34;</code></pre>
-</details>
-</dd>
-<dt id="app.get_waitlist_by_product"><code class="name flex">
-<span>def <span class="ident">get_waitlist_by_product</span></span>(<span>id)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
-def get_waitlist_by_product(id):
-    &#34;&#34;&#34;
-        get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
-    &#34;&#34;&#34;
-    try:
-        query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
-        documents = [doc.to_dict() for doc in query_ref.stream()]
-        return (jsonify({str(product_id):documents}),200)
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;</code></pre>
-</details>
-</dd>
 <dt id="app.post_advanced_analytics"><code class="name flex">
 <span>def <span class="ident">post_advanced_analytics</span></span>(<span>)</span>
 </code></dt>
@@ -669,7 +561,7 @@ def post_advanced_analytics():
         &#34;&#34;&#34;
         Creating a Basic Analytics document
         &#34;&#34;&#34;
-        today_date = datetime.datetime.now().date()
+        today_date = now.date()
         basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
         basic_analytics_document.set({
             &#39;product_name&#39;: product_name,
@@ -743,7 +635,7 @@ def post_amazon_deal_of_day():
         
         answers = run_gpt_qa(gpt_form) #gpt-3 QA function
 
-        today_date = datetime.datetime.now().date()
+        today_date = now.date()
         product_document = PRODUCT.document(product_id)
         product_document.set({
             &#39;Category&#39; : Category,
@@ -813,29 +705,6 @@ def post_amazon_deal_of_day():
     return answers</code></pre>
 </details>
 </dd>
-<dt id="app.update_scrapped_link"><code class="name flex">
-<span>def <span class="ident">update_scrapped_link</span></span>(<span>id)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>update_scrapped_link(id): This will go remove scrapped link from the waitlist but it will always be in our system.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
-def update_scrapped_link(id):
-    &#34;&#34;&#34;
-        update_scrapped_link(id): This will go remove scrapped link from the waitlist but it will always be in our system.
-    &#34;&#34;&#34;
-    try:
-        doc = SCRAPPED.document(id) # doc is DocumentReference
-        field_updates = {&#34;processed&#34;: True}
-        doc.update(field_updates)
-        return jsonify({&#34;success&#34;: True}), 200
-    except Exception as e:
-        return f&#34;An Error Occured: {e}&#34;</code></pre>
-</details>
-</dd>
 </dl>
 </section>
 <section>
@@ -850,18 +719,12 @@ def update_scrapped_link(id):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="app.Home" href="#app.Home">Home</a></code></li>
-<li><code><a title="app.delete_product_waitlist" href="#app.delete_product_waitlist">delete_product_waitlist</a></code></li>
 <li><code><a title="app.get_products" href="#app.get_products">get_products</a></code></li>
 <li><code><a title="app.get_products_waitlist" href="#app.get_products_waitlist">get_products_waitlist</a></code></li>
 <li><code><a title="app.get_products_waitlist_by_company" href="#app.get_products_waitlist_by_company">get_products_waitlist_by_company</a></code></li>
-<li><code><a title="app.get_scrapped" href="#app.get_scrapped">get_scrapped</a></code></li>
-<li><code><a title="app.get_scrapped_waitlist" href="#app.get_scrapped_waitlist">get_scrapped_waitlist</a></code></li>
-<li><code><a title="app.get_waitlist" href="#app.get_waitlist">get_waitlist</a></code></li>
-<li><code><a title="app.get_waitlist_by_product" href="#app.get_waitlist_by_product">get_waitlist_by_product</a></code></li>
 <li><code><a title="app.post_advanced_analytics" href="#app.post_advanced_analytics">post_advanced_analytics</a></code></li>
 <li><code><a title="app.post_amazon_deal_of_day" href="#app.post_amazon_deal_of_day">post_amazon_deal_of_day</a></code></li>
 <li><code><a title="app.run_gpt_qa" href="#app.run_gpt_qa">run_gpt_qa</a></code></li>
-<li><code><a title="app.update_scrapped_link" href="#app.update_scrapped_link">update_scrapped_link</a></code></li>
 </ul>
 </li>
 </ul>
