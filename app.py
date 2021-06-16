@@ -1,15 +1,4 @@
 import os
-from flask_cors import CORS, cross_origin
-import openai
-from flask import Flask, request, jsonify, render_template
-from datetime import datetime
-import uuid
-from firebase_admin import credentials, firestore, initialize_app, auth
-app = Flask(__name__)
-#import os
-app = Flask(__name__)
-CORS(app)
-
 @app.route('/', methods=['GET'])
 def enterprise():
     """
