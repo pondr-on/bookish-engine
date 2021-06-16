@@ -19,8 +19,8 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Official Pondr <code>Implemention API</code></h1>
-<p>Last Updated: 6/15/2021</p>
+<h1 class="title">Official Pondr <code>API</code></h1>
+<p>Last Updated: 6/16/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -356,11 +356,48 @@ def get_amazon_deal_of_the_day():
         get_amazon_deal_of_the_day(): get basic analytics of product of the day.
     &#34;&#34;&#34;
     try:
-        today_date = datetime.datetime.now().date()
+        today_date = str(datetime.date(now))
         query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
         return jsonify({&#34;deal_of_day&#34;: query_ref.to_dict()}), 200
     except Exception as e:
         return f&#34;An error Occured: {e}&#34;
+
+@app.route(&#39;/contact&#39;, methods=[&#39;POST&#39;])
+def contact():
+    &#34;&#34;&#34;
+        contact(): contact form backend for hubspot
+    &#34;&#34;&#34;
+    try:
+        req = request.json[&#39;data&#39;]
+        name = req[&#39;name&#39;]
+        email = req[&#39;email&#39;]
+        phone = req[&#39;phone&#39;]
+        message = req[&#39;message&#39;]
+        hs_res = [
+            {
+                &#39;name&#39;: &#39;subject&#39;,
+                &#39;value&#39;: name,
+            },{
+                &#39;name&#39;: &#39;content&#39;,
+                &#39;value&#39;:
+                &#39;Message: &#39; +
+                message +
+                &#39;\n\nEmail: &#39; +
+                email +
+                &#39;\n\nPhone: &#39; +
+                phone,
+            },{
+                &#39;name&#39;: &#39;hs_pipeline&#39;,
+                &#39;value&#39;: &#39;0&#39;,
+            },{
+                &#39;name&#39;: &#39;hs_pipeline_stage&#39;,
+                &#39;value&#39;: &#39;1&#39;,
+            },
+        ]
+        return requests.post(hubspot_url, data=json.dumps(hs_res, separators=(&#39;,&#39;, &#39;:&#39;)), headers={&#39;Content-type&#39;: &#39;application/json&#39;})
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;
+
 
 @app.route(&#39;/product=&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
 def get_basic_analytics(id):
@@ -463,6 +500,52 @@ def ask_ai_question(id):
             return (&#34;You are not authorized to view this page&#34;), 403
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;</code></pre>
+</details>
+</dd>
+<dt id="app.contact"><code class="name flex">
+<span>def <span class="ident">contact</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>contact(): contact form backend for hubspot</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@app.route(&#39;/contact&#39;, methods=[&#39;POST&#39;])
+def contact():
+    &#34;&#34;&#34;
+        contact(): contact form backend for hubspot
+    &#34;&#34;&#34;
+    try:
+        req = request.json[&#39;data&#39;]
+        name = req[&#39;name&#39;]
+        email = req[&#39;email&#39;]
+        phone = req[&#39;phone&#39;]
+        message = req[&#39;message&#39;]
+        hs_res = [
+            {
+                &#39;name&#39;: &#39;subject&#39;,
+                &#39;value&#39;: name,
+            },{
+                &#39;name&#39;: &#39;content&#39;,
+                &#39;value&#39;:
+                &#39;Message: &#39; +
+                message +
+                &#39;\n\nEmail: &#39; +
+                email +
+                &#39;\n\nPhone: &#39; +
+                phone,
+            },{
+                &#39;name&#39;: &#39;hs_pipeline&#39;,
+                &#39;value&#39;: &#39;0&#39;,
+            },{
+                &#39;name&#39;: &#39;hs_pipeline_stage&#39;,
+                &#39;value&#39;: &#39;1&#39;,
+            },
+        ]
+        return requests.post(hubspot_url, data=json.dumps(hs_res, separators=(&#39;,&#39;, &#39;:&#39;)), headers={&#39;Content-type&#39;: &#39;application/json&#39;})
+    except Exception as e:
+        return f&#34;An error Occured: {e}&#34;</code></pre>
 </details>
 </dd>
 <dt id="app.create_company"><code class="name flex">
@@ -667,7 +750,7 @@ def get_amazon_deal_of_the_day():
         get_amazon_deal_of_the_day(): get basic analytics of product of the day.
     &#34;&#34;&#34;
     try:
-        today_date = datetime.datetime.now().date()
+        today_date = str(datetime.date(now))
         query_ref = PRODUCT.where(u&#39;AmazonDealOfDay&#39;, u&#39;==&#39;, today_date)
         return jsonify({&#34;deal_of_day&#34;: query_ref.to_dict()}), 200
     except Exception as e:
@@ -923,6 +1006,7 @@ def request_review_guru():
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="app.ask_ai_question" href="#app.ask_ai_question">ask_ai_question</a></code></li>
+<li><code><a title="app.contact" href="#app.contact">contact</a></code></li>
 <li><code><a title="app.create_company" href="#app.create_company">create_company</a></code></li>
 <li><code><a title="app.create_product" href="#app.create_product">create_product</a></code></li>
 <li><code><a title="app.demo_ai_question" href="#app.demo_ai_question">demo_ai_question</a></code></li>

@@ -327,11 +327,48 @@ def get_amazon_deal_of_the_day():
         get_amazon_deal_of_the_day(): get basic analytics of product of the day.
     """
     try:
-        today_date = datetime.datetime.now().date()
+        today_date = str(datetime.date(now))
         query_ref = PRODUCT.where(u'AmazonDealOfDay', u'==', today_date)
         return jsonify({"deal_of_day": query_ref.to_dict()}), 200
     except Exception as e:
         return f"An error Occured: {e}"
+
+@app.route('/contact', methods=['POST'])
+def contact():
+    """
+        contact(): contact form backend for hubspot
+    """
+    try:
+        req = request.json['data']
+        name = req['name']
+        email = req['email']
+        phone = req['phone']
+        message = req['message']
+        hs_res = [
+            {
+                'name': 'subject',
+                'value': name,
+            },{
+                'name': 'content',
+                'value':
+                'Message: ' +
+                message +
+                '\n\nEmail: ' +
+                email +
+                '\n\nPhone: ' +
+                phone,
+            },{
+                'name': 'hs_pipeline',
+                'value': '0',
+            },{
+                'name': 'hs_pipeline_stage',
+                'value': '1',
+            },
+        ]
+        return requests.post(hubspot_url, data=json.dumps(hs_res, separators=(',', ':')), headers={'Content-type': 'application/json'})
+    except Exception as e:
+        return f"An error Occured: {e}"
+
 
 @app.route('/product=<id>', methods=['GET'])
 def get_basic_analytics(id):
@@ -368,4 +405,5 @@ def get_products_by_category(cat):
         return (jsonify({"category_documents":documents}),200)
     except Exception as e:
         return f"An error Occured: {e}"
+
 
