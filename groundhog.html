@@ -20,7 +20,7 @@
 <article id="content">
 <header>
 <h1 class="title"> GroundHog </h1><code>API</code></h1>
-<p>Last Updated: 6/15/2021</p>
+<p>Last Updated: 6/19/2021</p>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -34,6 +34,7 @@
 import os
 import tempfile
 from flask import Flask, request, jsonify, render_template
+import openai
 from flask_cors import CORS, cross_origin
 from datetime import datetime
 from firebase_admin import credentials, firestore, initialize_app, auth, storage
@@ -43,6 +44,7 @@ app = Flask(__name__)
 CORS(app)
 # Initialize Firestore DB
 cred = credentials.Certificate(&#39;pondr-306720-firebase-adminsdk-eo52u-f50cb5da7b.json&#39;)
+openai.api_key = (&#34;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&#34;)
 default_app = initialize_app(cred, {&#39;storageBucket&#39;: &#39;pondr-306720.appspot.com&#39;})
 db = firestore.client()
 GPT3QA = db.collection(&#39;GPT3-QA&#39;)
@@ -51,128 +53,21 @@ REVIEW = db.collection(&#39;Posts&#39;)
 PRODUCT = db.collection(&#39;Product&#39;)
 COMPANY = db.collection(&#39;Companies&#39;)
 SUGGESTION = db.collection(&#39;Petitions&#39;)
-REVIEW_GURU = db.collection(&#39;Review-gurus&#39;)
-WAITLIST = db.collection(&#39;Waitlisted-review&#39;)
 BASIC_ANALYTICS = db.collection(&#39;Basic_analytics&#39;)
 ADVANCED_ANALYTICS = db.collection(&#39;Advanced_analytics&#39;)
-SCRAPPED = db.collection(&#39;Scrapped&#39;)
 
 
 @app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
 def Home():
     &#34;&#34;&#34;
-        Home(): The home page with all documentation of the API
+        Home(): The home page for the groundhog API
     &#34;&#34;&#34;
     return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;
 
-# @app.route(&#39;/waitlist&#39;, methods = [&#39;GET&#39;])
-# def get_waitlist():
-#     &#34;&#34;&#34;
-#         get_waitlist(): This will return all the items in the waitlist
-#     &#34;&#34;&#34;
-#     try:
-#         documents = [doc.to_dict() for doc in WAITLIST.stream()]
-#         return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-#     except Exception as e:
-#         return f&#34;An error Occured: {e}&#34;
-
-
-# @app.route(&#39;/scrapped&#39;, methods = [&#39;GET&#39;])
-# def get_scrapped():
-#     &#34;&#34;&#34;
-#         get_scrapped(): This will return all the scrapped amazon link reviews entered into our website.
-#     &#34;&#34;&#34;
-#     try:
-#         documents = [doc.to_dict() for doc in SCRAPPED.stream()]
-#         return (jsonify({&#34;Entire Collection&#34;: documents}),200)
-#     except Exception as e:
-#         return f&#34;An error Occured: {e}&#34;
-
-
-# @app.route(&#39;/scrapped/waitlist&#39;, methods =[&#39;GET&#39;])
-# def get_scrapped_waitlist():
-#     &#34;&#34;&#34;
-#         get_scrapped_waitlist(): This will return all the scrapped amazon link review items that are yet to be analyzed.
-#     &#34;&#34;&#34;
-#     try:
-#         query_ref = SCRAPPED.where(u&#39;processed&#39;, &#39;==&#39;,False)
-#         documents = [doc.to_dict() for doc in query_ref.stream()]
-#         return (jsonify({&#34;Scrapped Links (Not Analyzed)&#34;: documents}),200)
-#     except Exception as e:
-#         return f&#34;An error has occured: {e}&#34;
-
-# @app.route(&#39;/scrapped/update=&lt;id&gt;&#39;, methods = [&#39;POST&#39;,&#39;PUT&#39;])
-# def update_scrapped_link(id):
-#     &#34;&#34;&#34;
-#         update_scrapped_link(id): This will go remove scrapped link from the waitlist but it will always be in our system.
-#     &#34;&#34;&#34;
-#     try:
-#         doc = SCRAPPED.document(id) # doc is DocumentReference
-#         field_updates = {&#34;processed&#34;: True}
-#         doc.update(field_updates)
-#         return jsonify({&#34;success&#34;: True}), 200
-#     except Exception as e:
-#         return f&#34;An Error Occured: {e}&#34;
-
-# @app.route(&#39;/product/entry&#39;, methods=[&#39;POST&#39;])
-# def create_product():
-#     &#34;&#34;&#34;
-#         create_product(id): after you analyzed a scrapped product, you need to create a product entry so that product will be in our system.
-#     &#34;&#34;&#34;
-#     now = datetime.now()
-#     try:
-#         data = request.json[&#39;data&#39;]
-#         description = data[&#39;description&#39;]
-#         product_name = data[&#39;product_name&#39;]
-#         company_id = &#34;PondrAnalytics&#34;
-#         company_name = &#34;Pondr&#34;
-#         category = data[&#39;category&#39;]
-#         product_image = data[&#39;product_image&#39;]
-#         attributes = data[&#39;attributes&#39;]
-#         product_id = category+&#34;-&#34;+ str(datetime.timestamp(now))
-#         doc = PRODUCT.document(product_id)
-#         doc.set({
-#             &#39;product_name&#39;: product_name,
-#             &#39;company_id&#39;: company_id,
-#             &#39;company_name&#39;: company_name,
-#             &#39;description&#39;: description,
-#             &#39;category&#39;: category,
-#             &#39;product_image&#39;: product_image,
-#             &#39;product_id&#39;: product_id,
-#             &#39;attributes&#39;: attributes
-#         })
-#         return jsonify({&#34;success&#34;: True}), 200
-#     except Exception as e:
-#         return f&#34;An Error Occured: {e}&#34;
-
-# @app.route(&#39;/wailist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
-# def get_waitlist_by_product(id):
-#     &#34;&#34;&#34;
-#         get_waitlist_by_product(id): get all the reviews that need to be analyzed by their product id.
-#     &#34;&#34;&#34;
-#     try:
-#         query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;,id)
-#         documents = [doc.to_dict() for doc in query_ref.stream()]
-#         return (jsonify({str(product_id):documents}),200)
-#     except Exception as e:
-#         return f&#34;An Error Occured: {e}&#34;
-
-# @app.route(&#39;/waitlist/delete=&lt;id&gt;&#39;, methods=[&#39;GET&#39;, &#39;DELETE&#39;])
-# def delete_product_waitlist(id):
-#     &#34;&#34;&#34;
-#         delete_product_waitlist(id): delete documents in the WAITLIST collection by product_id
-#     &#34;&#34;&#34;
-#     try:
-#         query_ref = WAITLIST.where(u&#39;Product_id&#39;, u&#39;==&#39;, id)
-#         documents = [doc.delete() for doc in query_ref.stream()]
-#         return (jsonify({&#34;documents deleted&#34;}),200)
-#     except Exception as e:
-#         return f&#34;An Error Occured: {e}&#34;
-
-# not an API endpoint
 def run_gpt_qa(form_id):
     &#34;&#34;&#34;
         run_gpt_qa(form_id): Top 3 questions for GPT-3 Q&amp;A on amazon deals of the day
+        [Not an API Endpoint]
     &#34;&#34;&#34;
     questions = [&#34;What is the worst part about this product?&#34;,&#34;What do you like the most about this product?&#34;,&#34;Why would you buy this product again?&#34;]
     answers = []
@@ -217,7 +112,7 @@ def post_amazon_deal_of_day():
         
         answers = run_gpt_qa(gpt_form) #gpt-3 QA function
 
-        today_date = now.date()
+        today_date = str(datetime.date(now))
         product_document = PRODUCT.document(product_id)
         product_document.set({
             &#39;Category&#39; : Category,
@@ -290,7 +185,7 @@ def post_advanced_analytics():
         &#34;&#34;&#34;
         Creating a Basic Analytics document
         &#34;&#34;&#34;
-        today_date = now.date()
+        today_date = str(datetime.date(now))
         basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
         basic_analytics_document.set({
             &#39;product_name&#39;: product_name,
@@ -329,74 +224,16 @@ def post_advanced_analytics():
     except Exception as e:
         return f&#34;An Error Occured: {e}&#34;
 
-# @app.route(&#39;/review-gurus&#39;, methods=[&#39;GET&#39;])
-# def get_review_gurus():
-#     &#34;&#34;&#34;
-#         get_review_gurus(): get all review gurus in our system
-#     &#34;&#34;&#34;
-#     try:
-#         documents = [doc.to_dict() for doc in REVIEW_GURU.stream()]
-#         return (jsonify({&#34;All Review Gurus&#34;: documents}),200)
-#     except Exception as e:
-#         return f&#34;An error Occured: {e}&#34;
-
-# @app.route(&#39;/review-gurus/assign&#39;, methods=[&#39;POST&#39;])
-# def assign_products():
-#     &#34;&#34;&#34;
-#         assign_products(): assign products to users by passing in their IDs in an array
-#     &#34;&#34;&#34;
-#     now = datetime.now()
-#     try:
-#         data = request.json[&#39;data&#39;]
-#         product_id = data[&#39;product_id&#39;]
-#         product_name = data[&#39;product_name&#39;]
-#         date = datetime.timestamp(now)
-#         product_category = data[&#39;product_category&#39;]
-#         review_gurus = data[&#39;review_guru_ids&#39;]
-#         for i in review_gurus:
-#             products_assigned = REVIEW_GURU.document(i).collection(&#39;products_assigned&#39;).document(product_id)
-#             products_assigned.set({
-#                 &#39;review_flag&#39;: False,
-#                 &#39;product_id&#39;: product_id,
-#                 &#39;product_name&#39;: product_name,
-#                 &#39;basic_analytics_link&#39;: &#34;null&#34;,
-#                 &#39;date_assigned&#39;: date,
-#                 &#39;date_shipped&#39;: &#34;&#34;,
-#                 &#39;date_recieved&#39;: &#34;&#34;,
-#                 &#39;due_date&#39;:&#34;&#34;
-#             })
-#             print(&#34;Review Guru assigned = &#34;, i)
-#         doc = PRODUCT.document(product_id) # doc is DocumentReference
-#         field_updates = {&#34;assigned&#34;: True}
-#         doc.update(field_updates)
-#         return  jsonify({&#34;success&#34;: True}), 200
-#     except Exception as e:
-#         return f&#34;An error Occured: {e}&#34;
-
 @app.route(&#39;/all-products&#39;, methods=[&#39;GET&#39;])
 def get_products():
     &#34;&#34;&#34;
-        assign_products(): assign products to users by passing in their IDs in an array
+        get_products(): get all products in out DB
     &#34;&#34;&#34;
     try:
         documents = [doc.to_dict() for doc in PRODUCT.stream()]
         return (jsonify({&#34;All Products&#34;: documents}),200)
     except Exception as e:
         return f&#34;An error Occured: {e}&#34;
-
-# @app.route(&#39;/product/assign&#39;, methods=[&#39;GET&#39;])
-# def get_products_to_be_assgined():
-#     &#34;&#34;&#34;
-#         get_products_to_be_assgined(): Get all products that are yet to be assigned
-#     &#34;&#34;&#34;
-#     try:
-#         # This Query is checking if a product has not be assigned and the company wants review gurus as well.
-#         # The reason for 2 flags is that, you don&#39;t want automatically assume companies always want review gurus.
-#         query_ref = PRODUCT.where(u&#39;assigned&#39;, &#39;==&#39;,False).where(u&#39;review_guru_analytics&#39;, &#39;==&#39;, True)
-#         documents = [doc.to_dict() for doc in query_ref.stream()]
-#         return (jsonify({&#34;Products to be assigned&#34;: documents}),200)
-#     except Exception as e:
-#         return f&#34;An error has Occured: {e}&#34;
 
 @app.route(&#39;/product/waitlist&#39;, methods=[&#39;GET&#39;])
 def get_products_waitlist():
@@ -411,9 +248,9 @@ def get_products_waitlist():
         return f&#34;An error has Occured: {e}&#34;
 
 @app.route(&#39;/product/waitlist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
-def get_products_waitlist_by_company():
+def get_products_waitlist_by_company(id):
     &#34;&#34;&#34;
-        get_products_waitlist_by_company(): Get all products that are yet to be analyzed by company ID.
+        get_products_waitlist_by_company(id): Get all products that are yet to be analyzed by company ID.
     &#34;&#34;&#34;
     try:
         query_ref = PRODUCT.where(u&#39;processed&#39;, &#39;==&#39;,False).where(u&#39;Company_id&#39;, &#39;==&#39;, id)
@@ -439,7 +276,7 @@ if __name__ == &#39;__main__&#39;:
 <span>def <span class="ident">Home</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Home(): The home page with all documentation of the API</p></div>
+<div class="desc"><p>Home(): The home page for the groundhog API</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -447,7 +284,7 @@ if __name__ == &#39;__main__&#39;:
 <pre><code class="python">@app.route(&#39;/&#39;, methods=[&#39;GET&#39;])
 def Home():
     &#34;&#34;&#34;
-        Home(): The home page with all documentation of the API
+        Home(): The home page for the groundhog API
     &#34;&#34;&#34;
     return &#34;&lt;h2&gt; Welcome to Pondr SuperAdmin API &lt;/h2&gt;&#34;</code></pre>
 </details>
@@ -456,7 +293,7 @@ def Home():
 <span>def <span class="ident">get_products</span></span>(<span>)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>assign_products(): assign products to users by passing in their IDs in an array</p></div>
+<div class="desc"><p>get_products(): get all products in out DB</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -464,7 +301,7 @@ def Home():
 <pre><code class="python">@app.route(&#39;/all-products&#39;, methods=[&#39;GET&#39;])
 def get_products():
     &#34;&#34;&#34;
-        assign_products(): assign products to users by passing in their IDs in an array
+        get_products(): get all products in out DB
     &#34;&#34;&#34;
     try:
         documents = [doc.to_dict() for doc in PRODUCT.stream()]
@@ -496,18 +333,18 @@ def get_products_waitlist():
 </details>
 </dd>
 <dt id="app.get_products_waitlist_by_company"><code class="name flex">
-<span>def <span class="ident">get_products_waitlist_by_company</span></span>(<span>)</span>
+<span>def <span class="ident">get_products_waitlist_by_company</span></span>(<span>id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>get_products_waitlist_by_company(): Get all products that are yet to be analyzed by company ID.</p></div>
+<div class="desc"><p>get_products_waitlist_by_company(id): Get all products that are yet to be analyzed by company ID.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@app.route(&#39;/product/waitlist/&lt;id&gt;&#39;, methods=[&#39;GET&#39;])
-def get_products_waitlist_by_company():
+def get_products_waitlist_by_company(id):
     &#34;&#34;&#34;
-        get_products_waitlist_by_company(): Get all products that are yet to be analyzed by company ID.
+        get_products_waitlist_by_company(id): Get all products that are yet to be analyzed by company ID.
     &#34;&#34;&#34;
     try:
         query_ref = PRODUCT.where(u&#39;processed&#39;, &#39;==&#39;,False).where(u&#39;Company_id&#39;, &#39;==&#39;, id)
@@ -561,7 +398,7 @@ def post_advanced_analytics():
         &#34;&#34;&#34;
         Creating a Basic Analytics document
         &#34;&#34;&#34;
-        today_date = now.date()
+        today_date = str(datetime.date(now))
         basic_analytics_document = BASIC_ANALYTICS.document(analytics_id)
         basic_analytics_document.set({
             &#39;product_name&#39;: product_name,
@@ -635,7 +472,7 @@ def post_amazon_deal_of_day():
         
         answers = run_gpt_qa(gpt_form) #gpt-3 QA function
 
-        today_date = now.date()
+        today_date = str(datetime.date(now))
         product_document = PRODUCT.document(product_id)
         product_document.set({
             &#39;Category&#39; : Category,
@@ -678,7 +515,8 @@ def post_amazon_deal_of_day():
 <span>def <span class="ident">run_gpt_qa</span></span>(<span>form_id)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>run_gpt_qa(form_id): Top 3 questions for GPT-3 Q&amp;A on amazon deals of the day</p></div>
+<div class="desc"><p>run_gpt_qa(form_id): Top 3 questions for GPT-3 Q&amp;A on amazon deals of the day
+[Not an API Endpoint]</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -686,6 +524,7 @@ def post_amazon_deal_of_day():
 <pre><code class="python">def run_gpt_qa(form_id):
     &#34;&#34;&#34;
         run_gpt_qa(form_id): Top 3 questions for GPT-3 Q&amp;A on amazon deals of the day
+        [Not an API Endpoint]
     &#34;&#34;&#34;
     questions = [&#34;What is the worst part about this product?&#34;,&#34;What do you like the most about this product?&#34;,&#34;Why would you buy this product again?&#34;]
     answers = []
